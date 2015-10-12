@@ -17,7 +17,7 @@ import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Parameter;
 import com.martiansoftware.jsap.SimpleJSAP;
-import com.yahoo.semsearch.fastlinking.utils.ClusterEntry;
+import com.yahoo.semsearch.fastlinking.view.ClusterEntry;
 
 /**
  * Utility class for using deep learned word vectors. Provides different algebraic manipulations of the word vectors, and utilities to run

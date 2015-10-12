@@ -1,4 +1,4 @@
-package com.yahoo.semsearch.fastlinking.utils;
+package com.yahoo.semsearch.fastlinking.view;
 
 /**
  * Holder for cluster entries. It contains the cluster id and the score.
