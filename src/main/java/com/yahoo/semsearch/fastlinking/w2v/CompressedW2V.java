@@ -6,10 +6,9 @@ import it.unimi.dsi.fastutil.io.BinIO;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.Arrays;
-
-import com.yahoo.semsearch.fastlinking.w2v.WordVectors;
-import com.yahoo.semsearch.fastlinking.w2v.WordVectorsUtils;
 
 /**
  * This class is a wrapper forwarding everything to Word2VecCompress.
@@ -17,15 +16,26 @@ import com.yahoo.semsearch.fastlinking.w2v.WordVectorsUtils;
  * @author roi
  * 
  */
-public class CompressedW2V implements WordVectors {
+public class CompressedW2V implements WordVectors, Serializable{
 
+    private static final long serialVersionUID = 1L;
     private Word2VecCompress vec;
     public int N;
 
     public CompressedW2V( String fileName ) throws ClassNotFoundException, IOException {
-	this.vec = (Word2VecCompress) BinIO.loadObject( fileName );
-	N = vec.getInt( 1 ).length;
+	this.vec = (Word2VecCompress) BinIO.loadObject( fileName );	
+	N = vec.getInt( 1 ).length;	
     }
+    
+    public CompressedW2V( ObjectInputStream ois ) throws IOException, ClassNotFoundException{    
+	final Object result = ois.readObject();
+	ois.close();
+	this.vec = (Word2VecCompress) result;
+	this.N = vec.getInt( 1 ).length;
+    }
+    
+    
+    
 
     @Override
     public float[] getVectorOf( String word ) {

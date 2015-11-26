@@ -172,7 +172,7 @@ public class Word2VecCompress implements Serializable {
 			indexToWord = new ArrayList<>();
 			
 			ObjectOpenHashSet<String> stringSet = new ObjectOpenHashSet<String>();
-			Random r = new Random();
+			Random r = new Random();			
 			for (int i = 0; i < numWords; ++i) {
 				pl.lightUpdate();
 				String s = lines.readLine();//.trim();//unicode vs ascii
@@ -187,6 +187,7 @@ public class Word2VecCompress implements Serializable {
 				    //horrible hack for duplicates
 				    indexToWord.add( s + r.nextDouble() );
 				}
+				System.out.println( s );
 			}
 			pl.done();
 
@@ -196,9 +197,10 @@ public class Word2VecCompress implements Serializable {
 			pl.expectedUpdates = numWords;
 			pl.start("Reading the vectors");
 			for (int i = 0; i < numWords; ++i) {
-				pl.lightUpdate();
-				String[] lineEntries = lines.readLine().split(" ");
-				for (int col = 0; col < vectorSize; ++col) {
+				pl.lightUpdate();	
+				String line = lines.readLine();
+				String[] lineEntries = line.split(" ");
+				for (int col = 0; col < vectorSize; ++col) {				    	
 					int entry = Integer.parseInt(lineEntries[col]);
 					entries[i * vectorSize + col] = entry;
 					columnAbsSum[col] += Fast.int2nat(entry) + 1;
