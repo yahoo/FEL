@@ -126,7 +126,7 @@ public class FastEntityLinker {
 			    + hash.getEntityName( e.id ) + " \033[0m score= " + span.score );
 
 		CharSequence text = hash.getEntityName( e.id );
-		if ( span.span.length() > 2 ) res.add( new EntityResult( span, text, e.id, span.score ) );
+		if ( span.span.length() > 2 && span.score > threshold ) res.add( new EntityResult( span, text, e.id, span.score ) );
 	    }
 	}
 	Collections.sort( res );
@@ -407,26 +407,23 @@ public class FastEntityLinker {
      * @param candidatesPerSpot number of candidates to score per spot
      * @param context class to score the context
      * @return
+     * @throws InterruptedException 
      */
-    public ArrayList<EntityScore> generateAllCandidates( String q, int k, EntityContext context ) {
+    public ArrayList<EntityScore> generateAllCandidates( String q, int k, EntityContext context ) throws InterruptedException {
 	ArrayList<EntityScore> allCandidates = new ArrayList<EntityScore>();
 	String parts[] = Normalize.normalize( q ).split( "\\s+" );
-	final int l = parts.length;
-	double[] currentScores = new double[ l + 1 ];
+	final int l = parts.length;	
 	ArrayList<String> ctxWords = new ArrayList<String>();
 	for ( String p : parts )
 	    ctxWords.add( p );	
-	context.setContextWords( ctxWords );
-	for ( int i = 0; i < l + 1; i++ ) {
-	    currentScores[ i ] = -10; //TODO ?
-	}
+	context.setContextWords( ctxWords );	
 	for ( int i = 0; i < l; i++ ) {
 	    StringBuilder text = new StringBuilder();
 	    for ( int j = i; j < l; j++ ) {
 		text.append( parts[ j ] );
 		CandidatesInfo infos = hash.getCandidatesInfo( text.toString() );
-		if ( infos != null ) {
-		    ArrayList<EntityScore> score = ranker.rankEntities( infos, context, q, ( j - i ), k );		    
+		if ( infos != null ) {		    
+		    ArrayList<EntityScore> score = ranker.getTopKEntities( infos, context, q, ( j - i ), k );		    
 		    allCandidates.addAll( score );
 		}
 		text.append( " " );
@@ -440,11 +437,12 @@ public class FastEntityLinker {
      * Generates all the possible candidates for a given query and scores them
      * This method is O(|q|^2)
      * @param query
-     * @param k
+     * @param k number of top candidates to return. This number is global for the whole query. If you want k candidates per span use generateAllCandidates
      * @return
+     * @throws InterruptedException 
      */
-    public List<EntityResult> getResultsGreedy( final String query, int k ) {
-	List<EntityResult> res = new ArrayList<EntityResult>();
+    public List<EntityResult> getResultsGreedy( final String query, int k ) throws InterruptedException {
+	List<EntityResult> res = new ArrayList<EntityResult>();	
 	ArrayList<EntityScore> scores = generateAllCandidates( query, k, context );
 	int i = 0;
 	while ( i < k && i < scores.size() ) {
@@ -466,13 +464,13 @@ public class FastEntityLinker {
      * @throws Exception
      */
     public static void main( String args[] ) throws Exception {	
-   	double threshold = -1;
+   	double threshold = -5;
    	QuasiSuccinctEntityHash hash = (QuasiSuccinctEntityHash) BinIO.loadObject( args[ 0 ] );
    	final BufferedReader br = new BufferedReader( new InputStreamReader( System.in ) );
    	String q;
    	FastEntityLinker fel = new FastEntityLinker( hash, hash.stats, new EmptyContext() );
    	for ( ;; ) {
-   	    //	    System.out.print( ">" );
+   	    System.out.print( ">" );
    	    q = br.readLine();
    	    if ( q == null ) {
    		System.err.println();
@@ -489,12 +487,17 @@ public class FastEntityLinker {
 
    	    long time = -System.nanoTime();
    	    try {
-   		List<EntityResult> results = fel.getResults( q, threshold );
+   		//List<EntityResult> results = fel.getResults( q, threshold );
+   		//List<EntityResult> results = fel.getResultsGreedy( q, 10 );
+   		List<EntityScore> results = fel.generateAllCandidates( q, 10, fel.context );
    		//List<EntityResult> results = fel.getResultsGreedy( q, 5 );
-   		for ( EntityResult er : results ) {   		    
+   		for( EntityScore es : results ){
+   		 System.out.println( q + "\t" + fel.hash.getEntityName( es.entity.id )+ "\t" + es.score + "\t" + es.entity.id );   
+   		}
+   		/*for ( EntityResult er : results ) {   		    
    		    //    System.out.println( "Wiki Id: \033[1m [" + er.text + "] \033[0m eId:" + er.id + " score: " + er.score + " (" + er.s.span + ")" ) ;
    		    System.out.println( q + "\t" + loc + "\t" + er.text + "\t" + er.score + "\t" + er.id );
-   		}
+   		}*/
    		time += System.nanoTime();
    		System.out.println( "Time to rank and print the candidates:" + time / 1000000. + " ms" );
    	    } catch ( Exception e ) {
