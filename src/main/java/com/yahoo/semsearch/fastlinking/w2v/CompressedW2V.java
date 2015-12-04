@@ -34,14 +34,22 @@ public class CompressedW2V implements WordVectors, Serializable{
 	this.N = vec.getInt( 1 ).length;
     }
     
+    public float[] get( long word ){
+	return vec.get( word );
+    }
     
-    
+    public int getSize( ){
+	return vec.size();
+    }
 
     @Override
     public float[] getVectorOf( String word ) {
 	return vec.get( word );
     }
 
+    public Long getWordId( String word ){
+	return vec.word_id( word );
+    }
     @Override
     public int getVectorLength() {
 	return N;
