@@ -28,6 +28,7 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
@@ -41,9 +42,11 @@ import com.yahoo.semsearch.fastlinking.utils.RunFELOntheGrid;
  * Learns entity embeddings using regularized logistic regression and negative
  * sampling In the paper lambda=10 and rho=20
  * 
- * Hadoop launcher
- * hadoop jar FEL-0.1.0-fat.jar -Dmapred.map.tasks=2000 -Dmapreduce.map.java.opts=-Xmx2g -Dmapreduce.map.memory.mb=2072 -Dmapred.job.queue.name=adhoc \
- -files /grid/0/tmp/roi/vectors#vectors E2W.text entity.embeddings
+ * Hadoop launcher hadoop jar FEL-0.1.0-fat.jar
+ * com.yahoo.semsearch.fastlinking.w2v.EntityEmbeddings -Dmapred.map.tasks=2000
+ * -Dmapreduce.map.java.opts=-Xmx2g -Dmapreduce.map.memory.mb=2072
+ * -Dmapred.job.queue.name=adhoc \ -files /grid/0/tmp/roi/vectors#vectors
+ * E2W.text entity.embeddings
  * 
  * @author roi
  *
@@ -252,15 +255,17 @@ public class EntityEmbeddings extends Configured implements Tool {
 	    String[] parts = t.toString().split( "\t" );
 	    if ( parts.length > 1 ) {
 		TrainingExamples ex = eb.getVectors( parts[ 1 ], vectors, rho, nwords );
-		float[] w = eb.trainLR2( ex.x, d, ex.y, alpha );
-		StringBuffer sb = new StringBuffer();
-		sb.append( parts[ 0 ] );
-		sb.append( " " );
-		for ( int i = 0; i < d; i++ ) {
-		    sb.append( w[ i ] );
+		if ( ex.y.length > 0 ) {
+		    float[] w = eb.trainLR2( ex.x, d, ex.y, alpha );
+		    StringBuffer sb = new StringBuffer();
+		    sb.append( parts[ 0 ] );
 		    sb.append( " " );
+		    for ( int i = 0; i < d; i++ ) {
+			sb.append( w[ i ] );
+			sb.append( " " );
+		    }
+		    context.write( new Text( parts[ 0 ] ), new Text( sb.toString() ) );
 		}
-		context.write( new Text( parts[ 0 ] ), new Text( sb.toString() ) );
 	    }
 	}
     }
@@ -304,7 +309,7 @@ public class EntityEmbeddings extends Configured implements Tool {
 	job.setJarByClass( RunFELOntheGrid.class );
 
 	job.setOutputKeyClass( Text.class );
-	job.setOutputValueClass( LongWritable.class );
+	job.setOutputValueClass( Text.class );
 	job.setMapperClass( EntityEMapper.class );
 	job.setReducerClass( EntityEReducer.class );
 	job.setCombinerClass( EntityEReducer.class );
@@ -312,5 +317,10 @@ public class EntityEmbeddings extends Configured implements Tool {
 	job.waitForCompletion( true );
 
 	return 0;
+    }
+
+    public static void main( String[] args ) throws Exception {
+	int res = ToolRunner.run( new Configuration(), new EntityEmbeddings(), args );
+	System.exit( res );
     }
 }
