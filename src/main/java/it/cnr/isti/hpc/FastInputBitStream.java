@@ -15,7 +15,7 @@ public class FastInputBitStream {
 	private long current;
 	private int fill;
 
-	FastInputBitStream(byte[] a) {
+	public FastInputBitStream(byte[] a) {
 		buf = ByteBuffer.wrap(a);
 		buf.order(ByteOrder.BIG_ENDIAN); // should be default anyway
 		fill = 0;
