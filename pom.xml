@@ -80,7 +80,6 @@
 							</transformers>
 							<transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                        <  
                          <manifestEntries>                                                      
                            <Main-Class>com.yahoo.semsearch.fastlinking.utils.RunFELOntheGrid</Main-Class>
                         </manifestEntries>
