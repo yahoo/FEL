@@ -30,7 +30,7 @@ If you use this library for research purposes, please cite the following paper:
 
 
 
-Code:
+#### Code:
 
 GitHub repo: https://git.corp.yahoo.com/roi/FEL
 DEPRECATED:
@@ -46,11 +46,11 @@ ENTITIES.PHRASE.model
 PHRASE.model
 alias.hash
 
-MODELS:
+#### MODELS:
 
 research-hm6.corp.gq1.yahoo.com:/mnt/scratch3/roi/FEL
 
-Stand-alone entity linking
+#### Stand-alone entity linking
 
 There are a number of different rankers/linkers that use different conceptual models. The overall description of the algorithm with some implementation details is at:
 
@@ -68,13 +68,17 @@ rlwrap java -Xmx10G com.yahoo.semsearch.fastlinking.EntityContextFastEntityLinke
 
 rlwrap java -Xmx10G com.yahoo.semsearch.fastlinking.FastEntityLinker data/alias.hash
 
-
-
-Grid based linking
+#### Grid based linking
 The following command works (it doesn't use the context-aware version):
 
-hadoop jar FEL-0.1.0-SNAPSHOT-jar-with-dependencies.jar -Dmapred.map.tasks=100 -Dmapreduce.map.java.opts=-Xmx3g -Dmapreduce.map.memory.mb=3072 -Dmapred.job.queue.name=adhoc \
- -files /grid/0/tmp/roi/alias.qsi#hash  <inputfile>
+    hadoop jar FEL-0.1.0-fat.jar \
+    -Dmapred.map.tasks=100 \
+    -Dmapreduce.map.java.opts=-Xmx3g \
+    -Dmapreduce.map.memory.mb=3072 \
+    -Dmapred.job.queue.name=adhoc \
+    -files /grid/0/tmp/roi/hashfile#hash,/grid/0/tmp/roi/id-type.tsv#mapping \
+    <inputfile>
+    <outputfile>
 
 The jar reads files that have one query per line - it splits on <TAB> and takes the first element. 
 At the moment it outputs the following format (which is PIG-friendly) although it could print out anything else if needed to. 
@@ -88,7 +92,7 @@ This is:
 In general you should rely on thresholding and possibly sticking to the top-1 entity retrieved but this depends on how you are going to use it.
 
 
-Fiddling with word embeddings
+#### Fiddling with word embeddings
 
 
 Trains and quantizes word2vec vectors for uni/bigrams and entities. An entity is anything that has 1) an identifier 2) a sequence of words describing it - a document, sentence could match 
