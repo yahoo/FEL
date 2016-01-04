@@ -49,17 +49,19 @@ public class EntityContextFastEntityLinker extends FastEntityLinker {
 
     public static void main( String args[] ) throws Exception {
 
-        SimpleJSAP jsap = new SimpleJSAP( EntityContextFastEntityLinker.class.getName(), "Interactive mode for entity linking", new Parameter[]{ new FlaggedOption( "hash", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP
-                .REQUIRED, 'h', "hash", "quasi succint hash" ), new FlaggedOption( "vectors", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'v', "vectors", "Unigram word vectors file" ), new FlaggedOption(
+        SimpleJSAP jsap = new SimpleJSAP( EntityContextFastEntityLinker.class.getName(), "Interactive mode for entity linking",
+                new Parameter[]{ new FlaggedOption( "hash", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'h', "hash", "quasi succint hash" ), new FlaggedOption( "vectors", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'v', "vectors", "Unigram word vectors file" ), new FlaggedOption(
                 "types", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 't', "types", "Type mapping file (for display)" ), new FlaggedOption( "labels", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED,
                 'l', "labels", "File containing query2entity labels" ), new FlaggedOption( "id2type", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'i', "id2type", "File with the id2type mapping" ), new
-                Switch( "centroid", 'c', "centroid", "Use centroid-based distances and not LR" ), new FlaggedOption( "map", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'm', "map", "Entity 2 type mapping "
-        ), new FlaggedOption( "entities", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'e', "entities", "Entities word vectors file" ), } );
+                Switch( "centroid", 'c', "centroid", "Use centroid-based distances and not LR" ),
+                        new FlaggedOption( "map", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'm', "map", "Entity 2 type mapping " ),
+                        new FlaggedOption( "threshold", JSAP.STRING_PARSER, "-20", JSAP.NOT_REQUIRED, 'd', "threshold", "Score threshold value " ),
+                        new FlaggedOption( "entities", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'e', "entities", "Entities word vectors file" ), } );
 
         JSAPResult jsapResult = jsap.parse( args );
         if( jsap.messagePrinted() ) return;
 
-        double threshold = -5;
+        double threshold = Double.parseDouble( jsapResult.getString("threshold") );
         QuasiSuccinctEntityHash hash = ( QuasiSuccinctEntityHash ) BinIO.loadObject( jsapResult.getString( "hash" ) );
         EntityContext queryContext;
         if( !jsapResult.getBoolean( "centroid" ) ) {
@@ -105,15 +107,17 @@ public class EntityContextFastEntityLinker extends FastEntityLinker {
                 List<EntityResult> results = linker.getResults( q, threshold );
                 //List<EntityResult> results = linker.getResultsGreedy( q, 5 );
                 //int rank = 0;
+
+
                 for( EntityResult er : results ) {
                     if( entities2Type != null ) {
                         String name = er.text.toString().trim();
                         String newType = entities2Type.get( name );
                         if( newType == null ) newType = "NF";
-                        //	System.out.println( q + "\t span: \u001b[1m [" + er.text + "] \u001b[0m eId: " + er.id + " ( t= " + newType + ")" + "  score: " + er.score + " ( "
-                        //		+ er.s.span + " ) " );
+                        	System.out.println( q + "\t span: \u001b[1m [" + er.text + "] \u001b[0m eId: " + er.id + " ( t= " + newType + ")" + "  score: " + er.score + " ( "
+                        		+ er.s.span + " ) " );
 
-                        System.out.println( newType + "\t" + q + "\t" + StringUtils.remove( q, er.s.span.toString() ) + " \t " + er.text );
+                        //System.out.println( newType + "\t" + q + "\t" + StringUtils.remove( q, er.s.span.toString() ) + " \t " + er.text );
                         break;
             /* } else {
                System.out.print( "[" + er.text + "(" + String.format("%.2f",er.score) +")] ");

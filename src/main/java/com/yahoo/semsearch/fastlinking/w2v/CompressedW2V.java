@@ -60,6 +60,8 @@ public class CompressedW2V implements WordVectors, Serializable {
         //CentroidEntityScorer scorer = new CentroidEntityScorer( (Word2VecCompress) BinIO.loadObject( args[0] ), (Word2VecCompress) BinIO.loadObject( args[1] ) );
         Word2VecCompress wv = ( Word2VecCompress ) BinIO.loadObject( args[ 1 ] );
         LREntityScorer scorer = new LREntityScorer( ( Word2VecCompress ) BinIO.loadObject( args[ 0 ] ), wv );
+
+
         final BufferedReader br = new BufferedReader( new InputStreamReader( System.in ) );
         CompressedW2V vectors = new CompressedW2V( args[ 0 ] );
         String q;

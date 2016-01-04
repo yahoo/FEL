@@ -125,8 +125,8 @@ public class ContextualRanker extends ProbabilityRanker {
      */
     public double secondPhaseRanking( Entity e, int len, float score, EntityContext context, String surfaceForm, CandidatesInfo info ) {
         float contextScore = ( float ) context.getEntityContextScore( e ); //log-p, score is p
-        System.out.println( hash.getEntityName( e.id ) + " 1st [ " +  score + " ] " + " ctx [ " + contextScore + "] + Math.log(score)= " + Math.log( score ) + "" +
-                "total "+ ( contextScore * corr + Math.log( score ) ) ) ;
+        //System.out.println( hash.getEntityName( e.id ) + " 1st [ " +  score + " ] " + " ctx [ " + contextScore + "] + Math.log(score)= " + Math.log( score ) + "" +
+          //      "total "+ ( contextScore * corr + Math.log( score ) ) ) ;
 
         contextScore = contextScore < minContext ? minContext : contextScore;
         //float lenPrior = 1F / ( 1F + (float) Math.exp( -1 * ( len - 1 ) ) );

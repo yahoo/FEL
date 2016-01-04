@@ -47,7 +47,7 @@ public class FastEntityLinker {
 
     private static final String[] BAD_WORDS = new String[]{ "wiki", "com", "www" };
     private static final Set<String> FILTER = new HashSet<String>( Arrays.asList( BAD_WORDS ) );
-    private double nilValueOne = -20;
+    private double nilValueOne = -100;
     private final Entity nilEntity = new Entity( -1 );
     private EntityScore nilCandidate = new EntityScore( nilEntity, nilValueOne );
     private final Entity[] emptyEntities = new Entity[ 0 ];
@@ -123,10 +123,11 @@ public class FastEntityLinker {
             if( span.e.id != -1 ) {
                 Entity e = span.e;
                 //if( DEBUG )
-                    System.out.println( "query " + query + " span: \033[1m [" + span.getSpan() + "] \033[0m eId: " + e.id + " \033[1m " + hash.getEntityName( e.id ) + " \033[0m score= " + span.score );
+                  //  System.out.println( "query " + query + " span: \033[1m [" + span.getSpan() + "] \033[0m eId: " + e.id + " \033[1m " + hash.getEntityName( e.id ) + " \033[0m score= " + span.score );
 
                 CharSequence text = hash.getEntityName( e.id );
                 if( span.span.length() > 2 && span.score > threshold ) res.add( new EntityResult( span, text, e.id, span.score ) );
+            }else{
             }
         }
         Collections.sort( res );
@@ -473,7 +474,7 @@ public class FastEntityLinker {
      * @throws Exception
      */
     public static void main( String args[] ) throws Exception {
-        double threshold = -5;
+        double threshold = -30;
         QuasiSuccinctEntityHash hash = ( QuasiSuccinctEntityHash ) BinIO.loadObject( args[ 0 ] );
         final BufferedReader br = new BufferedReader( new InputStreamReader( System.in ) );
         String q;
@@ -496,17 +497,17 @@ public class FastEntityLinker {
 
             long time = -System.nanoTime();
             try {
-                //List<EntityResult> results = fel.getResults( q, threshold );
+                List<EntityResult> results = fel.getResults( q, threshold );
                 //List<EntityResult> results = fel.getResultsGreedy( q, 10 );
-                List<EntityScore> results = fel.generateAllCandidates( q, 10, fel.context );
+                //List<EntityScore> results = fel.generateAllCandidates( q, 10, fel.context );
                 //List<EntityResult> results = fel.getResultsGreedy( q, 5 );
-                for( EntityScore es : results ) {
-                    System.out.println( q + "\t" + fel.hash.getEntityName( es.entity.id ) + "\t" + es.score + "\t" + es.entity.id );
-                }
-           /*for ( EntityResult er : results ) {
+                //for( EntityScore es : results ) {
+                 //   System.out.println( q + "\t" + fel.hash.getEntityName( es.entity.id ) + "\t" + es.score + "\t" + es.entity.id );
+               // }
+           for ( EntityResult er : results ) {
    		    //    System.out.println( "Wiki Id: \033[1m [" + er.text + "] \033[0m eId:" + er.id + " score: " + er.score + " (" + er.s.span + ")" ) ;
    		    System.out.println( q + "\t" + loc + "\t" + er.text + "\t" + er.score + "\t" + er.id );
-   		}*/
+   		}
                 time += System.nanoTime();
                 System.out.println( "Time to rank and print the candidates:" + time / 1000000. + " ms" );
             } catch( Exception e ) {

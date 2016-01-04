@@ -68,6 +68,8 @@ public abstract class EntityScorer {
 					* word_dim)) {			    
 				word_counts.add(entry.getCount());
 				n_words += 1;
+			}else{
+				//System.out.println("Ignoring " + entry.getElement() );
 			}
 		}
 		word_counts.trim();
