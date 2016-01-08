@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 
 /**
+ * java -Xmx5G -cp FEL-0.1.0-fat.jar com.yahoo.semsearch.fastlinking.w2v.Quantizer -i /mnt/scratch3/ymehdad/embeddings/en/wiki/enwik-s3-iter3.txt -o /mnt/scratch3/roi/quant -d -q 9 -h
  * @author roi
  */
 
@@ -52,13 +53,13 @@ public class Quantizer {
      * @param q
      * @throws IOException
      */
-    public void serialize( String modelFile, String outputFile, int q, int numberOfWords, boolean ignoreHeader ) throws
+    public void serialize( String modelFile, String outputFile, int q, int numberOfWords, boolean hashheader ) throws
             IOException {
         log.info( "Serializing quantized model to " + outputFile + " using q = " + q );
         BufferedWriter bw = new BufferedWriter( new OutputStreamWriter( new FileOutputStream( outputFile ), "UTF-8" ) );
         BufferedReader br = new BufferedReader( new InputStreamReader( new FileInputStream( new File( modelFile ) ) ) );
         String line = null;
-        if( !ignoreHeader ) br.readLine();
+        if( hashheader ) br.readLine();
 
         line = br.readLine();
         int len = line.split( "\\s+" ).length - 1;
@@ -67,7 +68,7 @@ public class Quantizer {
         br.close();
 
         br = new BufferedReader( new InputStreamReader( new FileInputStream( modelFile ), "UTF-8" ) );
-        if( !ignoreHeader) br.readLine(); //skip the header
+        if( hashheader) br.readLine(); //skip the header
         while( ( line = br.readLine() ) != null ) {
             String[] parts = line.split( "\\s+" );
             bw.write( parts[ 0 ] + "\n");
@@ -75,7 +76,7 @@ public class Quantizer {
         br.close();
 
         br = new BufferedReader( new InputStreamReader( new FileInputStream( new File( modelFile ) ) ) );
-        if( !ignoreHeader ) br.readLine(); //skip the header
+        if( hashheader ) br.readLine(); //skip the header
         while( ( line = br.readLine() ) != null ) {
             String[] parts = line.split( "\\s+" );
             for( int i = 1; i < parts.length; i++ ) {
@@ -130,7 +131,7 @@ public class Quantizer {
                 new FlaggedOption( "input", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'i', "input", "Entity" +
                         " description files" ),
                 new Switch( "direct", 'd', "direct", "use a direct quantizer and not binary search" ),
-                new Switch( "ignoreHeader", 'h', "ignoreHeader", "if the embeddings file has a header present (will skip it)" ),
+                new Switch( "hashheader", 'h', "hashheader", "if the embeddings file has a header present (will skip it)" ),
                 new FlaggedOption( "quantizer", JSAP.STRING_PARSER, "10", JSAP.NOT_REQUIRED, 'q', "quantizer", "Quantizer" +
                         " value" ),
                 new FlaggedOption( "error", JSAP.STRING_PARSER, "0.1", JSAP.NOT_REQUIRED, 'e', "error", "Error rate" ),
@@ -145,7 +146,7 @@ public class Quantizer {
                     ( jsapResult.getString( "quantizer" ) ), jsapResult.getBoolean( "ignoreHeader" ) );
         }else{
             q.quantize( jsapResult.getString( "input" ), jsapResult.getString( "output" ), Double.parseDouble( jsapResult
-                    .getString( "error" ) ), jsapResult.getBoolean( "ignoreHeader" ) );
+                    .getString( "error" ) ), jsapResult.getBoolean( "hashheader" ) );
         }
 
     }
@@ -157,11 +158,11 @@ public class Quantizer {
      * @param inputFile
      * @param outputFile
      * @param q
-     * @param ignoreHeader
+     * @param hashheader
      * @throws IOException
      */
-    public void quantizeSinglePass( String inputFile, String outputFile, int q, boolean ignoreHeader ) throws IOException {
-        serialize( inputFile, outputFile, q, countWords( inputFile, ignoreHeader ), ignoreHeader );
+    public void quantizeSinglePass( String inputFile, String outputFile, int q, boolean hashheader ) throws IOException {
+        serialize( inputFile, outputFile, q, countWords( inputFile, hashheader ), hashheader );
     }
 
     public int countWords( String inputfile, boolean hasHeader ) throws IOException {
@@ -172,6 +173,7 @@ public class Quantizer {
         while( ( line = br.readLine() ) != null ) {
             items++;
         }
+        System.out.println("Found ["+items+"] words ");
         return items;
     }
 
@@ -183,10 +185,10 @@ public class Quantizer {
      *
      * @param inputFile
      * @param outputFile
-     * @param ignoreHeader
+     * @param hashheader
      * @throws IOException
      */
-    public void quantize( String inputFile, String outputFile, double targetError, boolean ignoreHeader ) throws IOException {
+    public void quantize( String inputFile, String outputFile, double targetError, boolean hashheader ) throws IOException {
         int low = 1;
         int high = 128;
         int bestQ = 0;
@@ -206,6 +208,6 @@ public class Quantizer {
                 high = bestQ;
             }
         }
-        serialize( inputFile, outputFile, bestQ, nWords, ignoreHeader );
+        serialize( inputFile, outputFile, bestQ, nWords, hashheader );
     }
 }

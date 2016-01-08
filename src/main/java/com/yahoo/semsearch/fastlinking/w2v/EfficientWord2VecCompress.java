@@ -82,9 +82,11 @@ public class EfficientWord2VecCompress extends Word2VecCompress {
             size = ( long ) numWords * vectorSize;
             pl.expectedUpdates = numWords;
             pl.start( "Reading the vectors" );
+            String preLin = "";
             for( int i = 0; i < numWords; ++i ) {
                 pl.lightUpdate();
                 String line = lines.readLine();
+                try{
                 String[] lineEntries = line.split( " " );
                 for( int col = 0; col < vectorSize; ++col ) {
                     int entry = Integer.parseInt( lineEntries[ col ] );
@@ -92,8 +94,13 @@ public class EfficientWord2VecCompress extends Word2VecCompress {
                     // IntBigArrays.add( entries, i * vectorSize + col, entry );
                     columnAbsSum[ col ] += Fast.int2nat( entry ) + 1;
                 }
-            }
-            pl.done();
+                }catch( Exception e ){
+                    System.err.println( "[ERROR] at line " + i + " : " + line + " word " + indexToWord.get( i ));
+                    e.printStackTrace();
+                    System.exit(-1);
+                }
+
+            }            pl.done();
 
         }
 
