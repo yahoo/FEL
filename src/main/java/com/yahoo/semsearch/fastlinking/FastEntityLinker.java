@@ -126,7 +126,9 @@ public class FastEntityLinker {
                   //  System.out.println( "query " + query + " span: \033[1m [" + span.getSpan() + "] \033[0m eId: " + e.id + " \033[1m " + hash.getEntityName( e.id ) + " \033[0m score= " + span.score );
 
                 CharSequence text = hash.getEntityName( e.id );
-                if( span.span.length() > 2 && span.score > threshold ) res.add( new EntityResult( span, text, e.id, span.score ) );
+                //if( span.span.length() > 2 && span.score > threshold )
+                if(  span.score > threshold )
+                    res.add( new EntityResult( span, text, e.id, span.score ) );
             }else{
             }
         }

@@ -90,6 +90,36 @@ public class Quantizer {
         bw.close();
     }
 
+
+    public void serializeW2VFormat( String modelFile, String outputFile, int q, int numberOfWords, boolean hashheader ) throws
+            IOException {
+        log.info( "Serializing quantized model to " + outputFile + " using q = " + q );
+        BufferedWriter bw = new BufferedWriter( new OutputStreamWriter( new FileOutputStream( outputFile ), "UTF-8" ) );
+        BufferedReader br = new BufferedReader( new InputStreamReader( new FileInputStream( new File( modelFile ) ) ) );
+        String line = null;
+        if( hashheader ) br.readLine();
+
+        line = br.readLine();
+        int len = line.split( "\\s+" ).length - 1;
+        bw.write( numberOfWords + "\t" + len + "\t" + q );
+        bw.write( "\n" );
+        br.close();
+
+        br = new BufferedReader( new InputStreamReader( new FileInputStream( modelFile ), "UTF-8" ) );
+        if( hashheader) br.readLine(); //skip the header
+        while( ( line = br.readLine() ) != null ) {
+            String[] parts = line.split( "\\s+" );
+            bw.write( parts[ 0 ] + " ");
+            for( int i = 1; i < parts.length; i++ ) {
+                Double ff = new Double( parts[ i ] );
+                int qa = ( int ) ( ( int ) ( Math.abs( ff ) * q ) * Math.signum( ff ) );
+                bw.write( qa + " " );
+            }
+        }
+        br.close();
+        bw.close();
+    }
+
     /**
      * To avoid storing everything in memory, we read the input file each time
      *
@@ -135,6 +165,7 @@ public class Quantizer {
                 new FlaggedOption( "quantizer", JSAP.STRING_PARSER, "10", JSAP.NOT_REQUIRED, 'q', "quantizer", "Quantizer" +
                         " value" ),
                 new FlaggedOption( "error", JSAP.STRING_PARSER, "0.1", JSAP.NOT_REQUIRED, 'e', "error", "Error rate" ),
+                new Switch( "w2v", 'w', "w2v", "Use the original w2v format" ),
                 new FlaggedOption( "output", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'o', "output",
                         "Compressed version" ), } );
         JSAPResult jsapResult = jsap.parse( args );
@@ -143,10 +174,10 @@ public class Quantizer {
         if( jsapResult.getBoolean( "direct" )){
             System.out.println( "Using as a quantizer " + jsapResult.getString( "quantizer" ) + " (won't attempt to search for a better one) ");
             q.quantizeSinglePass( jsapResult.getString( "input" ), jsapResult.getString( "output" ), Integer.parseInt
-                    ( jsapResult.getString( "quantizer" ) ), jsapResult.getBoolean( "ignoreHeader" ) );
+                    ( jsapResult.getString( "quantizer" ) ), jsapResult.getBoolean( "ignoreHeader" ) , jsapResult.getBoolean( "w2v" ));
         }else{
             q.quantize( jsapResult.getString( "input" ), jsapResult.getString( "output" ), Double.parseDouble( jsapResult
-                    .getString( "error" ) ), jsapResult.getBoolean( "hashheader" ) );
+                    .getString( "error" ) ), jsapResult.getBoolean( "hashheader" ), jsapResult.getBoolean( "w2v" ) );
         }
 
     }
@@ -161,8 +192,9 @@ public class Quantizer {
      * @param hashheader
      * @throws IOException
      */
-    public void quantizeSinglePass( String inputFile, String outputFile, int q, boolean hashheader ) throws IOException {
-        serialize( inputFile, outputFile, q, countWords( inputFile, hashheader ), hashheader );
+    public void quantizeSinglePass( String inputFile, String outputFile, int q, boolean hashheader, boolean w2vFormat ) throws IOException {
+        if( !w2vFormat) serialize( inputFile, outputFile, q, countWords( inputFile, hashheader ), hashheader );
+        else  serializeW2VFormat( inputFile, outputFile, q, countWords( inputFile, hashheader ), hashheader );
     }
 
     public int countWords( String inputfile, boolean hasHeader ) throws IOException {
@@ -188,7 +220,7 @@ public class Quantizer {
      * @param hashheader
      * @throws IOException
      */
-    public void quantize( String inputFile, String outputFile, double targetError, boolean hashheader ) throws IOException {
+    public void quantize( String inputFile, String outputFile, double targetError, boolean hashheader, boolean w2vFormat ) throws IOException {
         int low = 1;
         int high = 128;
         int bestQ = 0;
@@ -208,6 +240,7 @@ public class Quantizer {
                 high = bestQ;
             }
         }
-        serialize( inputFile, outputFile, bestQ, nWords, hashheader );
+        if( ! w2vFormat) serialize( inputFile, outputFile, bestQ, nWords, hashheader );
+        else serializeW2VFormat( inputFile,outputFile,bestQ, nWords, hashheader );
     }
 }
