@@ -11,21 +11,6 @@
 		<min_jdk_version>1.7</min_jdk_version>
 		<max_jdk_version>1.8</max_jdk_version>		
   </properties>
-  
-  <!-- not working anymore?
-<distributionManagement>
-    <repository>
-        <id>artifactory-02.infra.gq1.yahoo.com</id>
-        <name>artifactory-02.infra.gq1.yahoo.com-releases</name>
-        <url>https://artifactory.ops.yahoo.com:9999/artifactory/acceptance-test</url>
-    </repository>
-    <snapshotRepository>
-        <id>artifactory-02.infra.gq1.yahoo.com</id>
-        <name>artifactory-02.infra.gq1.yahoo.com-snapshots</name>
-        <url>https://artifactory.ops.yahoo.com:9999/artifactory/acceptance-test</url>
-    </snapshotRepository>
-</distributionManagement>
--->
   <build>
  
   <extensions>
@@ -78,15 +63,16 @@
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 							</transformers>
-							<transformers>
+							<!--<transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-          <!--               <manifestEntries>                                                      
+          <!-               <manifestEntries>
                            <Main-Class>com.yahoo.semsearch.fastlinking.utils.RunFELOntheGrid</Main-Class>
                         </manifestEntries>
--->
                         
                 </transformer>
+
               </transformers>
+              -->
 							<artifactSet>
 							</artifactSet>
 						</configuration>
@@ -131,12 +117,18 @@
 			<version>0.14.0</version>
 			<scope>provided</scope>
 		</dependency>
-		
+          <dependency>
+          <groupId>it.cnr.isti.hpc</groupId>
+          <artifactId>word2vec-compress</artifactId>
+          <version>1.0</version>
+          </dependency>
+		<!--
 		<dependency>
 			<groupId>yahoo.yinst.hadoop_mvn_client</groupId>
 			<artifactId>hadoop-client</artifactId>
 			<version>${hadoop.version}</version>
 		</dependency>
+		-->
     </dependencies>
     
 </project>

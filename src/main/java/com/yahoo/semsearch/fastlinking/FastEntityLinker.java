@@ -113,7 +113,7 @@ public class FastEntityLinker {
      *
      * @param query
      * @param threshold
-     * @return
+     * @return+
      */
     public List<EntityResult> getResults( final String query, final double threshold ) {
         List<EntityResult> res = new ArrayList<EntityResult>();

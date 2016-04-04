@@ -1,6 +1,5 @@
 package com.yahoo.semsearch.fastlinking.w2v;
 
-import com.yahoo.semsearch.fastlinking.view.Entity;
 import it.cnr.isti.hpc.LREntityScorer;
 import it.cnr.isti.hpc.Word2VecCompress;
 import it.unimi.dsi.fastutil.io.BinIO;

@@ -6,7 +6,6 @@ import it.cnr.isti.hpc.Word2VecCompress;
 import it.unimi.dsi.big.util.ShiftAddXorSignedStringMap;
 import it.unimi.dsi.bits.Fast;
 import it.unimi.dsi.bits.TransformationStrategies;
-import it.unimi.dsi.fastutil.ints.IntBigArrays;
 import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.fastutil.io.FastByteArrayOutputStream;
 import it.unimi.dsi.fastutil.longs.LongArrayList;

@@ -2,7 +2,6 @@ package com.yahoo.semsearch.fastlinking.w2v;
 
 import it.cnr.isti.hpc.CentroidEntityScorer;
 import it.cnr.isti.hpc.EntityScorer;
-import it.cnr.isti.hpc.EntityScorer.ScorerContext;
 import it.cnr.isti.hpc.Word2VecCompress;
 import it.unimi.dsi.fastutil.io.BinIO;
 
@@ -25,7 +24,7 @@ public class CentroidEntityContext extends EntityContext {
     protected EntityScorer scorer;
     protected QuasiSuccinctEntityHash hash; //TODO remove
 
-    private ScorerContext context;
+    protected EntityScorer.ScorerContext context;
 
     //hack for speeding up the id look-ups
     private ArrayList<Long> idMapping;
@@ -60,9 +59,10 @@ public class CentroidEntityContext extends EntityContext {
 
     @Override
     public float queryNormalizer() {
-        float c = context.queryNormalizer();
-        return c;
+        //float c = context.queryNormalizer();
+        //return c;
         //return c > 0? c : 1;
+        return 1F;
     }
 
     @Override

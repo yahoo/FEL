@@ -17,7 +17,7 @@ import com.yahoo.semsearch.fastlinking.view.EntityScore;
  * {@link #rank(Entity e, CandidatesInfo info, EntityContext context, String surfaceForm, int length )
  * rank} method
  * 
- * @author roi
+ * @author roi blanco
  *
  */
 public abstract class CandidateRanker {
