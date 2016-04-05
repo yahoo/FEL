@@ -5,6 +5,12 @@ This library performs query segmentation and entity linking to the Yahoo Knowled
 (< 1 or 2 ms/query on average on a standard laptop) that is completely unsupervised, so that more sophisticated approaches can work on top of it with a decent time budget available. A side effect of this is that the datapack used by the linker 
 occupies <3GB making it suitable to run on the grid (and making the footprint on server machines very low).
 
+Dependencies: 
+
+git clone https://github.com/ot/entity2vec
+mvn install
+
+
  Future releases will contain
 
 intent detection (what aspects of an entity the query is referring to), either linking to yo/isearch taxonomy or YK predicates
@@ -106,7 +112,7 @@ First, compute word embeddings using whatever software you prefer, and output th
 To quantize + compress the vectors:
 java com.yahoo.semsearch.fastlinking.w2v.Quantizer -i <word_embeddings> -o <output> -h
 
-java -Xmx5G it.cnr.isti.hpc.Word2VecCompress <quantized_file> <output>
+java -Xmx5G com.yahoo.semsearch.fastlinking.w2v.Word2VecCompress <quantized_file> <output>
 
 --entity vectors
 The program accepts a file with the following format (one per line)
