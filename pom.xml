@@ -117,11 +117,27 @@
 			<version>0.14.0</version>
 			<scope>provided</scope>
 		</dependency>
-          <dependency>
+		
+		<dependency>
+			<groupId>net.sf.trove4j</groupId>
+			<artifactId>trove4j</artifactId>
+			<version>3.0.3</version>
+		</dependency>
+		<dependency>
+			<groupId>info.bliki.wiki</groupId>
+			<artifactId>bliki-core</artifactId>
+			<version>3.0.19</version>
+		</dependency>
+		<dependency>
+			<groupId>edu.umd</groupId>
+			<artifactId>cloud9</artifactId>
+			<version>1.5.0</version>
+		</dependency>
+          <!-- dependency>
           <groupId>it.cnr.isti.hpc</groupId>
           <artifactId>word2vec-compress</artifactId>
           <version>1.0</version>
-          </dependency>
+          </dependency-->
 		<!--
 		<dependency>
 			<groupId>yahoo.yinst.hadoop_mvn_client</groupId>
