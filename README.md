@@ -110,10 +110,11 @@ JAVA VERSION
 First, compute word embeddings using whatever software you prefer, and output the word vectors in word2vec C format.
 
 To quantize + compress the vectors:
+```java
 java com.yahoo.semsearch.fastlinking.w2v.Quantizer -i <word_embeddings> -o <output> -h
 
 java -Xmx5G com.yahoo.semsearch.fastlinking.w2v.Word2VecCompress <quantized_file> <output>
-
+```
 --entity vectors
 The program accepts a file with the following format (one per line)
 
@@ -121,19 +122,23 @@ entity_id <TAB> number <TAB> word sequence
 
 The class com.yahoo.semsearch.fastlinking.w2v.EntityEmbeddings computes entity embeddings (on the grid or on a single machine).
 
+```java
 hadoop jar FEL-0.1.0-fat.jar com.yahoo.semsearch.fastlinking.w2v.EntityEmbeddings -Dmapreduce.input .fileinputformat.split.minsize=100 -Dmapreduce.input.fileinputformat.split.maxsize=90000 -Dmapreduce.job.maps=3000
 -Dmapred.child.java.opts=-XX:-UseGCOverheadLimit -Dmapreduce.map.java.opts=-Xmx3g -Dmapreduce.map.memory.mb=3072 \
 -Dmapreduce.job.queuename=adhoc \ -files /grid/0/tmp/roi/vectors#vectors E2W.text entity.embeddings
+```
 
 
 Then, you can quantize + compress the resulting vectors, just like we did for word embeddings.
 
 If you have a large number (likely) of entity vectors, it might take a while to find the right quantization factor, and you might want to use one straight ahead:
-
+```java
 java com.yahoo.semsearch.fastlinking.w2v.Quantizer -i <embeddings> -o <output> -d 8 
-
+```
 To compress the vectors, it's better to use the following class (it scales up to millions of vectors):
+```java
 com.yahoo.semsearch.fastlinking.w2v.EfficientWord2VecCompress
+```
 
 
 ## Mine Wikipedia and Extract Graph-Based Counts
@@ -266,7 +271,7 @@ hadoop dfs -put - wiki/${WIKI_MARKET}/${WIKI_DATE}/id-entity.tsv
 The minimum steps required to compute the alias-entity dependent features are described below. Please refer to the following maven project for more details:
 
 Aggregate Alias-Entity Dependent Counts
-
+```bash
 # set FEL_DATE to the FEL datapack generation date, e.g.
 FEL_DATE=20151108
 
@@ -287,7 +292,7 @@ WIKI_DATE=20151102
 -param feat=wiki/${WIKI_MARKET}/${WIKI_DATE}/feat/alias-entity/count \
 -param output=fel/${FEL_DATE}/feat/graph/${WIKI_MARKET}/${WIKI_DATE}/alias-entity/agg \
 -file ./src/main/pig/aggregate-graph-alias-entity-counts.pig
-
+```
 ##Compute Alias-Entity Dependent Features
 
 ```bash
@@ -355,4 +360,4 @@ sed "s/)}$//" \
 
 chmod --recursive ugo+rx \
 /grid/0/tmp/fel
-```
+``
