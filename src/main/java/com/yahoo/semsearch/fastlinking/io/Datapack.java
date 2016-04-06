@@ -69,7 +69,7 @@ public class Datapack extends Configured implements Tool {
 
 	private void merge(String anchorMapPath, String dfMapPath, String multiple_out, String out) throws IOException {
 
-		JobConf conf = new JobConf(getConf(), AlpDatapack.class);
+		JobConf conf = new JobConf(getConf(), Datapack.class);
 		FileSystem fs = FileSystem.get(conf);
 
 		BufferedWriter anchorsDataOut;
