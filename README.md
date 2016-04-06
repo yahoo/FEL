@@ -34,7 +34,7 @@ The library also comes with two different sets of tools for generating the hash 
 * Compressing word vectors (typical compression ratios are around 10x).
 
 If you use this library, please cite the following paper:
-
+```json
 @inproceedings{Blanco:WSDM2015,
         Address = {New York, NY, USA},
         Author = {Blanco, Roi and Ottaviano, Giuseppe and Meij, Edgar},
@@ -46,13 +46,13 @@ If you use this library, please cite the following paper:
         Title = {Fast and Space-Efficient Entity Linking in Queries},
         Year = {2015},
 }
-
+```
 
 #### Stand-alone query entity linking
 
 There are a number of different rankers/linkers that use different conceptual models. The overall description of the algorithm with some implementation details is at:
 
-[http://www.dc.fi.udc.es/~roi/publications/wsdm2015.pdf] 
+http://www.dc.fi.udc.es/~roi/publications/wsdm2015.pdf
 
 The two main classes to use are 
 com.yahoo.semsearch.fastlinking.FastEntityLinker (no context)
@@ -94,10 +94,8 @@ In general you should rely on thresholding and possibly sticking to the top-1 en
 #### Fiddling with word embeddings
 
 
-Trains and quantizes word2vec vectors for uni/bigrams and entities. An entity is anything that has 1) an identifier 2) a sequence of words describing it - a document, sentence could match 
-this definition.
-
-JAVA VERSION
+This package also provides code to quantize word2vec vectors for uni/bigrams and generate vectors for entities. An entity is anything that has both an identifier
+and a sequence of words describing it - a document, sentence could match this definition.
 
 --word vectors
 First, compute word embeddings using whatever software you prefer, and output the word vectors in word2vec C format.
