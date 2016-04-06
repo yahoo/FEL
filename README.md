@@ -1,26 +1,39 @@
 # FEL
 Fast Entity Linker Core
 
-This library performs query segmentation and entity linking to the Yahoo Knowledge base. Its current version is tailored towards query entity linking (alternatively, short fragments of text). The main goal was to have an extremely fast linker 
-(< 1 or 2 ms/query on average on a standard laptop) that is completely unsupervised, so that more sophisticated approaches can work on top of it with a decent time budget available. A side effect of this is that the datapack used by the linker 
+This library performs query segmentation and entity linking to a target reference Knowledge Base (i.e, Wikipedia). In its current version is tailored
++towards query entity linking (alternatively, short fragments of text). The main goal was to have an extremely fast linker
+ (< 1 or 2 ms/query on average on a standard laptop) that is completely unsupervised, so that more sophisticated approaches can work on top of it with a decent time budget available. A side effect of this is that the datapack used by the linker
 occupies <3GB making it suitable to run on the grid (and making the footprint on server machines very low).
 
-Dependencies: 
+##Install
 
-git clone https://github.com/ot/entity2vec
-mvn install
+The project comes with a pom.xml which should install all the dependencies required, except for one that has to be installed manually:
+```bash
+git clone https://github.com/ot/entity2vec; cd entity2vec; mvn install
+```
+Then
+```bash
+mvn clean; mvn package
+```
 
+## What does this tool do?
+The library performs query and document entity linking. It implements different algorithms that return a confidence score (~log likelihood)
+that should be (more or less) comparable across pieces of text of different length so one can use a global threshold for linking. The program operates
+with two datastructures, one big hash and compressed word and entity vectors. The hash is generated out of a datapack that records __counts__ of
+phrases and entities that co-ocur together. This counts might come from different sources, for instance anchor text and query logs. In anchor
+text, whenever there's a link to a corresponding entity page we would store the anchor and the entity counds. In a query log whenever there's a
+click to an entity page, we would update the query and entity counts. The word and entity vector files are compressed vector (duh) representations
+that account for the contexts in which the word/entity appears. Word vectors can be generated using general tools like word2vec, whereas the library
+provides a way to learn the entity vectors.
 
- Future releases will contain
+The library also comes with two different sets of tools for generating the hash and the word vector files.
+* First, you need to generate a __datapack__ that stores counts of phrases and entities. We provide tools for mining a Wikipedia dump and creating the datapack out of it.
+* Generating a hash structure out of a datapack.
+* Generating entity vectors out of a set of entity descriptions, which can be extracted from Wikipedia pages.
+* Compressing word vectors (typical compression ratios are around 10x).
 
-intent detection (what aspects of an entity the query is referring to), either linking to yo/isearch taxonomy or YK predicates
-Answer type prediction 
-Entity linking in long text 
-Entity linking with an additional supervised layer 
-
-The library returns a confidence score (~log likelihood) that should be (more or less) comparable across queries of different length so one can use a global threshold for linking.
-
-If you use this library for research purposes, please cite the following paper:
+If you use this library, please cite the following paper:
 
 @inproceedings{Blanco:WSDM2015,
         Address = {New York, NY, USA},
@@ -35,48 +48,28 @@ If you use this library for research purposes, please cite the following paper:
 }
 
 
-
-#### Code:
-
-GitHub repo: https://git.corp.yahoo.com/roi/FEL
-DEPRECATED:
-Artifactory project space (jars)
-https://artifactory.ops.yahoo.com:9999/artifactory/webapp/search/artifact/?12&q=pimel 
-
-(data)
-https://artifactory.ops.yahoo.com:9999/artifactory/webapp/search/artifact/?14&q=pimel-models 
-
-Alternative datapack location (should move to artifactory in the next few days).
-gwta6000.tan.ygrid.yahoo.com:/grid/0/tmp/roi/FNELPIMEL-0.0.1-SNAPSHOT-fat.jar
-ENTITIES.PHRASE.model
-PHRASE.model
-alias.hash
-
-#### MODELS:
-
-research-hm6.corp.gq1.yahoo.com:/mnt/scratch3/roi/FEL
-
-#### Stand-alone entity linking
+#### Stand-alone query entity linking
 
 There are a number of different rankers/linkers that use different conceptual models. The overall description of the algorithm with some implementation details is at:
 
-https://git.corp.yahoo.com/emeij/techpulse2014-wsdm/blob/master/WSDM/paper.pdf
+[http://www.dc.fi.udc.es/~roi/publications/wsdm2015.pdf] 
 
 The two main classes to use are 
 com.yahoo.semsearch.fastlinking.FastEntityLinker (no context)
-com.yahoo.semsearch.fastlinking.EntityContextFastEntityLinker (with context)
+com.yahoo.semsearch.fastlinking.EntityContextFastEntityLinker (context-aware)
 
 The classes can be called with --help for the input option list.
 They provide interactive linking through stdin (edit the code or extend for custom output format).
 
 Example usage calls (you don't need rlwrap but it's nice to have):
+```bash
 rlwrap java -Xmx10G com.yahoo.semsearch.fastlinking.EntityContextFastEntityLinker -h data/alias.hash -u data/PHRASE.model -e data/ENTITIES.PHRASE.model
 
 rlwrap java -Xmx10G com.yahoo.semsearch.fastlinking.FastEntityLinker data/alias.hash
-
+```
 #### Grid based linking
-The following command works (it doesn't use the context-aware version):
-
+The following command works 
+```bash
     hadoop jar FEL-0.1.0-fat.jar \
     -Dmapred.map.tasks=100 \
     -Dmapreduce.map.java.opts=-Xmx3g \
@@ -85,7 +78,7 @@ The following command works (it doesn't use the context-aware version):
     -files /grid/0/tmp/roi/hashfile#hash,/grid/0/tmp/roi/id-type.tsv#mapping \
     <inputfile>
     <outputfile>
-
+```
 The jar reads files that have one query per line - it splits on <TAB> and takes the first element. 
 At the moment it outputs the following format (which is PIG-friendly) although it could print out anything else if needed to. 
 
@@ -109,8 +102,8 @@ JAVA VERSION
 --word vectors
 First, compute word embeddings using whatever software you prefer, and output the word vectors in word2vec C format.
 
-To quantize + compress the vectors:
-```java
+To quantize and compress the vectors:
+```bash
 java com.yahoo.semsearch.fastlinking.w2v.Quantizer -i <word_embeddings> -o <output> -h
 
 java -Xmx5G com.yahoo.semsearch.fastlinking.w2v.Word2VecCompress <quantized_file> <output>
@@ -120,23 +113,28 @@ The program accepts a file with the following format (one per line)
 
 entity_id <TAB> number <TAB> word sequence
 
+You can generate this file out of a Wikipedia dump using
+```bash
+java com.yahoo.semsearch.fastlinking.utils.ExtractFirstParagraphs <input_wiki_dump> <output_file>
+```
+
 The class com.yahoo.semsearch.fastlinking.w2v.EntityEmbeddings computes entity embeddings (on the grid or on a single machine).
 
-```java
+```bash
 hadoop jar FEL-0.1.0-fat.jar com.yahoo.semsearch.fastlinking.w2v.EntityEmbeddings -Dmapreduce.input .fileinputformat.split.minsize=100 -Dmapreduce.input.fileinputformat.split.maxsize=90000 -Dmapreduce.job.maps=3000
 -Dmapred.child.java.opts=-XX:-UseGCOverheadLimit -Dmapreduce.map.java.opts=-Xmx3g -Dmapreduce.map.memory.mb=3072 \
 -Dmapreduce.job.queuename=adhoc \ -files /grid/0/tmp/roi/vectors#vectors E2W.text entity.embeddings
 ```
 
 
-Then, you can quantize + compress the resulting vectors, just like we did for word embeddings.
+Then, you can quantize and compress the resulting vectors, just like we did for word embeddings.
 
 If you have a large number (likely) of entity vectors, it might take a while to find the right quantization factor, and you might want to use one straight ahead:
-```java
+```bash
 java com.yahoo.semsearch.fastlinking.w2v.Quantizer -i <embeddings> -o <output> -d 8 
 ```
 To compress the vectors, it's better to use the following class (it scales up to millions of vectors):
-```java
+```bash
 com.yahoo.semsearch.fastlinking.w2v.EfficientWord2VecCompress
 ```
 
@@ -154,31 +152,34 @@ WIKI_MARKET=en
 # set WIKI_DATE to the wikipedia dump you want to process, e.g.
 WIKI_DATE=20151102
 
+#set your WORKING_DIR to the directory you want to store the data
+WORKING_DIR=/grid/tmp/wiki
+
 # create directory
-mkdir --parents /grid/0/tmp/wiki/${WIKI_MARKET}/${WIKI_DATE}
+mkdir --parents ${WORKING_DIR}/${WIKI_MARKET}/${WIKI_DATE}
 
 # download datapack from web
- wget --output-document=/grid/0/tmp/wiki/${WIKI_MARKET}/${WIKI_DATE}/pages-articles.xml.bz2 \
+ wget --output-document=${WORKING_DIR}/${WIKI_MARKET}/${WIKI_DATE}/pages-articles.xml.bz2 \
 http://dumps.wikimedia.org/\
 ${WIKI_MARKET}wiki/${WIKI_DATE}/${WIKI_MARKET}wiki-${WIKI_DATE}-pages-articles.xml.bz2
 
 # unzip datapack
 bzip2 --verbose --keep --decompress \
-/grid/0/tmp/wiki/${WIKI_MARKET}/${WIKI_DATE}/pages-articles.xml.bz2
+${WORKING_DIR}/${WIKI_MARKET}/${WIKI_DATE}/pages-articles.xml.bz2
 
 # create hdfs directory
 hdfs dfs -mkdir -p wiki/${WIKI_MARKET}/${WIKI_DATE}
 
 # copy datapack on hdfs
 hdfs dfs -copyFromLocal \
-/grid/0/tmp/wiki/${WIKI_MARKET}/${WIKI_DATE}/pages-articles.xml \
+${WORKING_DIR}/${WIKI_MARKET}/${WIKI_DATE}/pages-articles.xml \
 wiki/${WIKI_MARKET}/${WIKI_DATE}/
 ```
 
 Preprocess Datapack
 ```bash
 hadoop \
-jar target/wikipedia-extraction-0.0.1-SNAPSHOT-jar-with-dependencies.jar \
+jar target/FEL-0.1.0.jar \
 com.yahoo.bcn.util.WikipediaDocnoMappingBuilder \
 -Dmapreduce.map.env="JAVA_HOME=/home/gs/java/jdk64/current" \
 -Dmapreduce.reduce.env="JAVA_HOME=/home/gs/java/jdk64/current" \
@@ -193,7 +194,7 @@ com.yahoo.bcn.util.WikipediaDocnoMappingBuilder \
 -keep_all
 
 hadoop \
-jar target/wikipedia-extraction-0.0.1-SNAPSHOT-jar-with-dependencies.jar \
+jar target/FEL-0.1.0.jar \
 com.yahoo.bcn.util.RepackWikipedia \
 -Dmapreduce.map.env="JAVA_HOME=/home/gs/java/jdk64/current" \
 -Dmapreduce.reduce.env="JAVA_HOME=/home/gs/java/jdk64/current" \
@@ -212,7 +213,7 @@ com.yahoo.bcn.util.RepackWikipedia \
 Build Data Structures
 ```bash
 hadoop \
-jar target/wikipedia-extraction-0.0.1-SNAPSHOT-jar-with-dependencies.jar \
+jar target/FEL-0.1.0.jar\
 com.yahoo.bcn.ExtractWikipediaAnchorText \
 -Dmapreduce.map.env="JAVA_HOME=/home/gs/java/jdk64/current" \
 -Dmapreduce.reduce.env="JAVA_HOME=/home/gs/java/jdk64/current" \
@@ -237,16 +238,16 @@ com.yahoo.bcn.AlpDatapack \
 -amap wiki/${WIKI_MARKET}/${WIKI_DATE}/anchors.map \
 -cfmap wiki/${WIKI_MARKET}/${WIKI_DATE}/alias-entity-counts.map \
 -multi true \
--output /grid/0/tmp/wiki/${WIKI_MARKET}/${WIKI_DATE}/alias-entity-counts
+-output ${WORKING_DIR}/${WIKI_MARKET}/${WIKI_DATE}/alias-entity-counts
 
 # copy to hdfs
 hadoop dfs -copyFromLocal \
-/grid/0/tmp/wiki/${WIKI_MARKET}/${WIKI_DATE}/alias-entity-counts.dat \
+${WORKING_DIR}/${WIKI_MARKET}/${WIKI_DATE}/alias-entity-counts.dat \
 wiki/${WIKI_MARKET}/${WIKI_DATE}/
 
 # copy to hdfs
 hadoop dfs -copyFromLocal \
-/grid/0/tmp/wiki/${WIKI_MARKET}/${WIKI_DATE}/alias-entity-counts.tsv \
+${WORKING_DIR}/${WIKI_MARKET}/${WIKI_DATE}/alias-entity-counts.tsv \
 wiki/${WIKI_MARKET}/${WIKI_DATE}/
 
 # create directory
@@ -254,7 +255,7 @@ hadoop dfs -mkdir -p \
 wiki/${WIKI_MARKET}/${WIKI_DATE}/feat/alias-entity/count
 
 # copy counts
-hadoop dfs -copyFromLocal /grid/0/tmp/wiki/${WIKI_MARKET}/${WIKI_DATE}/alias-entity-counts.tsv \
+hadoop dfs -copyFromLocal ${WORKING_DIR}/${WIKI_MARKET}/${WIKI_DATE}/alias-entity-counts.tsv \
 wiki/${WIKI_MARKET}/${WIKI_DATE}/feat/alias-entity/count
 
 # set numerical id
@@ -281,7 +282,7 @@ WIKI_MARKET=en
 # set WIKI_DATE to the wikipedia dump you want to process, e.g.
 WIKI_DATE=20151102
 
-/grid/0/gs/pig/current/bin/pig \
+pig \
 -stop_on_failure \
 -Dpig.additional.jars=./target/FEL-0.1.0.jar \
 -Dmapred.output.compression.enabled=true \
@@ -292,11 +293,11 @@ WIKI_DATE=20151102
 -param feat=wiki/${WIKI_MARKET}/${WIKI_DATE}/feat/alias-entity/count \
 -param output=fel/${FEL_DATE}/feat/graph/${WIKI_MARKET}/${WIKI_DATE}/alias-entity/agg \
 -file ./src/main/pig/aggregate-graph-alias-entity-counts.pig
-```
+``
 ##Compute Alias-Entity Dependent Features
 
 ```bash
-/grid/0/gs/pig/current/bin/pig \
+pig \
 -stop_on_failure \
 -Dmapred.output.compression.enabled=true \
 -Dmapred.output.compress=true \
@@ -322,7 +323,7 @@ WIKI_MARKET=en
 WIKI_DATE=20151102
 
 time \
-/grid/0/gs/pig/current/bin/pig \
+pig \
 -stop_on_failure \
 -useHCatalog \
 -Dpig.additional.jars=./target/FEL-0.1.0.jar \
@@ -342,7 +343,7 @@ time \
 Copy Datapack to Local Directory
 ```bash
 OUTPUT_DIR=\
-/grid/0/tmp/fel/datapack/${FEL_DATE}/\
+${WORKING_DIR}/fel/datapack/${FEL_DATE}/\
 wiki-${WIKI_MARKET}-${WIKI_DATE}
 
 mkdir --parent ${OUTPUT_DIR}
@@ -359,5 +360,5 @@ sed "s/)}$//" \
 > ${OUTPUT_DIR}/features.dat
 
 chmod --recursive ugo+rx \
-/grid/0/tmp/fel
+${WORKING_DIR}/fel
 ``
