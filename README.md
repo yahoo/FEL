@@ -231,7 +231,7 @@ Compute Alias-Entity Dependent Counts
 
 ```bash
 hadoop \
-jar target/wikipedia-extraction-0.0.1-SNAPSHOT-jar-with-dependencies.jar \
+jar target/FEL-0.1.0.jar \
 com.yahoo.semsearch.io.Datapack \
 -amap wiki/${WIKI_MARKET}/${WIKI_DATE}/anchors.map \
 -cfmap wiki/${WIKI_MARKET}/${WIKI_DATE}/alias-entity-counts.map \
@@ -291,7 +291,7 @@ pig \
 -param feat=wiki/${WIKI_MARKET}/${WIKI_DATE}/feat/alias-entity/count \
 -param output=fel/${FEL_DATE}/feat/graph/${WIKI_MARKET}/${WIKI_DATE}/alias-entity/agg \
 -file ./src/main/pig/aggregate-graph-alias-entity-counts.pig
-``
+```
 ##Compute Alias-Entity Dependent Features
 
 ```bash
@@ -359,4 +359,4 @@ sed "s/)}$//" \
 
 chmod --recursive ugo+rx \
 ${WORKING_DIR}/fel
-``
+```
