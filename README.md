@@ -178,7 +178,7 @@ Preprocess Datapack
 ```bash
 hadoop \
 jar target/FEL-0.1.0.jar \
-com.yahoo.bcn.util.WikipediaDocnoMappingBuilder \
+com.yahoo.semsearch.io.WikipediaDocnoMappingBuilder \
 -Dmapreduce.map.env="JAVA_HOME=/home/gs/java/jdk64/current" \
 -Dmapreduce.reduce.env="JAVA_HOME=/home/gs/java/jdk64/current" \
 -Dyarn.app.mapreduce.am.env="JAVA_HOME=/home/gs/java/jdk64/current" \
@@ -193,7 +193,7 @@ com.yahoo.bcn.util.WikipediaDocnoMappingBuilder \
 
 hadoop \
 jar target/FEL-0.1.0.jar \
-com.yahoo.bcn.util.RepackWikipedia \
+com.yahoo.semsearch.io.RepackWikipedia \
 -Dmapreduce.map.env="JAVA_HOME=/home/gs/java/jdk64/current" \
 -Dmapreduce.reduce.env="JAVA_HOME=/home/gs/java/jdk64/current" \
 -Dyarn.app.mapreduce.am.env="JAVA_HOME=/home/gs/java/jdk64/current" \
@@ -212,7 +212,7 @@ Build Data Structures
 ```bash
 hadoop \
 jar target/FEL-0.1.0.jar\
-com.yahoo.bcn.ExtractWikipediaAnchorText \
+com.yahoo.semsearch.io.ExtractWikipediaAnchorText \
 -Dmapreduce.map.env="JAVA_HOME=/home/gs/java/jdk64/current" \
 -Dmapreduce.reduce.env="JAVA_HOME=/home/gs/java/jdk64/current" \
 -Dyarn.app.mapreduce.am.env="JAVA_HOME=/home/gs/java/jdk64/current" \
@@ -232,7 +232,7 @@ Compute Alias-Entity Dependent Counts
 ```bash
 hadoop \
 jar target/wikipedia-extraction-0.0.1-SNAPSHOT-jar-with-dependencies.jar \
-com.yahoo.bcn.AlpDatapack \
+com.yahoo.semsearch.io.Datapack \
 -amap wiki/${WIKI_MARKET}/${WIKI_DATE}/anchors.map \
 -cfmap wiki/${WIKI_MARKET}/${WIKI_DATE}/alias-entity-counts.map \
 -multi true \
@@ -267,7 +267,7 @@ hadoop dfs -put - wiki/${WIKI_MARKET}/${WIKI_DATE}/id-entity.tsv
 
 ###Compute Graph-Based Entity Dependent Features & Alias-Entity Dependent Features
 
-The minimum steps required to compute the alias-entity dependent features are described below. Please refer to the following maven project for more details:
+The minimum steps required to compute the alias-entity dependent features are described below.
 
 Aggregate Alias-Entity Dependent Counts
 ```bash
