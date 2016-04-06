@@ -1,4 +1,4 @@
-package com.yahoo.bcn.io;
+package com.yahoo.semsearch.fastlinking.io;
 
 import org.apache.log4j.Logger;
 

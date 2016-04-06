@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  */
 
-package com.yahoo.bcn.util;
+package com.yahoo.semsearch.fastlinking.io;
 
 import edu.umd.cloud9.collection.wikipedia.WikipediaPage;
 import edu.umd.cloud9.collection.wikipedia.language.ArabicWikipediaPage;

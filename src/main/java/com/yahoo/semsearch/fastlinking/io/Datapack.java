@@ -1,4 +1,4 @@
-package com.yahoo.bcn;
+package com.yahoo.semsearch.fastlinking.io;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
@@ -26,7 +26,7 @@ import org.apache.hadoop.util.ToolRunner;
 
 import edu.umd.cloud9.io.map.HMapSIW;
 
-public class AlpDatapack extends Configured implements Tool {
+public class Datapack extends Configured implements Tool {
 
 	static final String outputEncoding = "UTF-8";
 	private static final String SEPARATOR = Character.toString('\u0001');
@@ -169,11 +169,11 @@ public class AlpDatapack extends Configured implements Tool {
 
 	}
 
-	public AlpDatapack() {
+	public Datapack() {
 	}
 
 	public static void main(String[] args) throws Exception {
-		int res = ToolRunner.run(new AlpDatapack(), args);
+		int res = ToolRunner.run(new Datapack(), args);
 		System.exit(res);
 	}
 }

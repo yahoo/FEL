@@ -1,4 +1,4 @@
-package com.yahoo.bcn.io;
+package com.yahoo.semsearch.fastlinking.io;
 
 /**
  * Simple class to hold a span annotation. 

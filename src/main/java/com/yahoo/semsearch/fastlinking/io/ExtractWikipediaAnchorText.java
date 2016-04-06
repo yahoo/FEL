@@ -1,4 +1,4 @@
-package com.yahoo.bcn;
+package com.yahoo.semsearch.fastlinking.io;
 
 import java.io.IOException;
 import java.net.URI;
@@ -43,8 +43,6 @@ import org.apache.hadoop.mapred.lib.IdentityReducer;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
-
-import com.yahoo.bcn.util.PunctuationDiacriticsFolder;
 
 import edu.umd.cloud9.collection.wikipedia.WikipediaPage;
 import edu.umd.cloud9.collection.wikipedia.WikipediaPage.Link;

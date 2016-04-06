@@ -1,4 +1,4 @@
-package com.yahoo.bcn.util;
+package com.yahoo.semsearch.fastlinking.io;
 
 import java.text.Normalizer;
 import java.util.regex.Matcher;

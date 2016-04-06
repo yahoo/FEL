@@ -1,4 +1,4 @@
-package com.yahoo.bcn.io;
+package com.yahoo.semsearch.fastlinking.io;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -9,7 +9,7 @@ import java.util.Set;
  * @author emeij
  *
  */
-public class Query implements Comparable<Query> {
+public class Query implements  Comparable<Query>{
 
 	public String ID;
 	public String editor;
@@ -191,7 +191,7 @@ public class Query implements Comparable<Query> {
 
 	}
 
-	@Override
+	//@Override
 	public int compareTo(Query o) {
 		return Integer.valueOf(ID).compareTo(Integer.valueOf(o.getID()));
 	}

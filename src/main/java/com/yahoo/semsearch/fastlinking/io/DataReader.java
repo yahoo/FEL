@@ -1,4 +1,4 @@
-package com.yahoo.bcn.io;
+package com.yahoo.semsearch.fastlinking.io;
 
 import java.util.Collection;
 import java.util.Set;
