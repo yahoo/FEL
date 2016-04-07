@@ -20,7 +20,7 @@ import com.martiansoftware.jsap.SimpleJSAP;
  * It has a method to join types (integer id) with a file that contains integer to string id type
  * mapping and filters out those types that do not occur in an editorial file 
  * 
- * @author roi
+ * @author roi blanco
  *
  */
 public class FilterWordsFromType {

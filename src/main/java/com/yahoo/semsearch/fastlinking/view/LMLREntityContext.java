@@ -19,8 +19,8 @@ import com.yahoo.semsearch.fastlinking.w2v.LREntityContext;
  * type. The language model must have been calculated previously using @see
  * com.yahoo.semsearch.fastlinking.utils.TypeLanguageModel
  * Internally the class uses a cache for type scoring that is flushed out each time the context words are set using @see setContextWords
- * @author roi
  *
+ * @author roi blanco
  */
 public class LMLREntityContext extends LREntityContext {
     private TypeLanguageModel models;
@@ -30,49 +30,49 @@ public class LMLREntityContext extends LREntityContext {
     private static final int muLM = 1000;
     private static final double DEFAULT_SCORE = -50;
 
-    public LMLREntityContext( String unigramF, String entityF, AbstractEntityHash hash, String modelFile, String typeMappingFile )
-	    throws ClassNotFoundException, IOException {
-	super( unigramF, entityF, hash );
-	typeMapping = EntityContextFastEntityLinker.readTypeMapping( typeMappingFile );
-	models = (TypeLanguageModel) BinIO.loadObject( modelFile );
-	reset();
+    public LMLREntityContext( String unigramF, String entityF, AbstractEntityHash hash, String modelFile, String typeMappingFile ) throws ClassNotFoundException, IOException {
+        super( unigramF, entityF, hash );
+        typeMapping = EntityContextFastEntityLinker.readTypeMapping( typeMappingFile );
+        models = ( TypeLanguageModel ) BinIO.loadObject( modelFile );
+        reset();
     }
 
     @Override
     public void setContextWords( ArrayList<String> words ) {
-	super.setContextWords( words );
-	ngrams = TypeLanguageModel.getTrigrams( words );
-	reset();
+        super.setContextWords( words );
+        ngrams = TypeLanguageModel.getTrigrams( words );
+        reset();
     }
 
     /**
      * Flushes out the scoring cache
      */
     private void reset() {
-	scoreCache = new HashMap<Short, Double>();
+        scoreCache = new HashMap<Short, Double>();
     }
 
     /**
      * Computes the score of a given type using the log-likelihood with respect to a previously computed language model
-     * @param type
-     * @return
+     *
+     * @param type identifier of the type you are scoring
+     * @return score of the type for the previously set context
      */
     public double getScoreOf( short type ) {
-	Double score = scoreCache.get( type );
-	if ( score != null ) return score;
-	score = 0D;
-	final String t = typeMapping.get( type );
-	if ( t == null ) return DEFAULT_SCORE; //type not found in mapping - warning?
-	final Object2IntOpenHashMap<String> lm = models.languageModels.get( t );
-	if ( lm == null ) return DEFAULT_SCORE;
-	for ( String w : ngrams ) {
-	    Integer f = lm.get( w );
-	    if ( f != null ) { //else add zero, = do nothing
-		score += Math.log( ( f + muLM * ( (double) models.backgroundModel.get( w ) / models.totalFreq ) ) / ( models.freqs.get( t ) + muLM ) );
-	    }
-	}
-	if ( score == 0D ) score = DEFAULT_SCORE;
-	scoreCache.put( type, score );
-	return score;
+        Double score = scoreCache.get( type );
+        if( score != null ) return score;
+        score = 0D;
+        final String t = typeMapping.get( type );
+        if( t == null ) return DEFAULT_SCORE; //type not found in mapping - warning?
+        final Object2IntOpenHashMap<String> lm = models.languageModels.get( t );
+        if( lm == null ) return DEFAULT_SCORE;
+        for( String w : ngrams ) {
+            Integer f = lm.get( w );
+            if( f != null ) { //else add zero, = do nothing
+                score += Math.log( ( f + muLM * ( ( double ) models.backgroundModel.get( w ) / models.totalFreq ) ) / ( models.freqs.get( t ) + muLM ) );
+            }
+        }
+        if( score == 0D ) score = DEFAULT_SCORE;
+        scoreCache.put( type, score );
+        return score;
     }
 }

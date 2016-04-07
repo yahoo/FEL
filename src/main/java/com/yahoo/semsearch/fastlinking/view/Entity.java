@@ -6,7 +6,7 @@ import java.io.Serializable;
  * This class stores the view representation of an entity. This contains its
  * features and identifier along with its type.
  * 
- * @author roi
+ * @author roi blanco
  *
  */
 

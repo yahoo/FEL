@@ -13,7 +13,7 @@ import com.yahoo.semsearch.fastlinking.view.CandidatesInfo;
  *  - a getCandidatesInfo method for getting a CandidatesInfo object out of a String surface form, this is
  * 		given a string representing an alias, return all the stored features
  *  - a getEntityName method that returns the string name identifier of an entity given its integer id 
- * @author roi
+ * @author roi blanco
  *
  */
 public abstract class AbstractEntityHash implements Serializable {
@@ -29,15 +29,15 @@ public abstract class AbstractEntityHash implements Serializable {
 
     /**
      * Extract a set of stored features in the CandidatesInfo object out of a surfaceForm alias 
-     * @param surfaceForm
-     * @return
+     * @param surfaceForm surface form to get the candidates from
+     * @return candidates info containing entities that could be linked to surface form, with their statistics
      */
     public abstract CandidatesInfo getCandidatesInfo( String surfaceForm );
 
     /**
      * return the string identifier of an entity given its integer identifier
-     * @param id
-     * @return
+     * @param id entity id
+     * @return string for the entity with identifier id
      */
     public abstract CharSequence getEntityName( int id );
 

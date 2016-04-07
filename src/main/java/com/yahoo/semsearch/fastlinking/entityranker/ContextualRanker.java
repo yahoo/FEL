@@ -12,15 +12,19 @@ import com.yahoo.semsearch.fastlinking.view.EntityScore;
 /**
  * Makes use of the remaining words of the query to create a score for the
  * candidate This only computes zero-order dependencies (if there is a
- * dependency from a previous pick, it has to the factored out of this class).
+ * dependency from a previous selection, it has to the factored out of this class).
  *
  * @author roi
  */
 public class ContextualRanker extends ProbabilityRanker {
     protected final float normalizerQueries;
     protected final float normalizerAnchor;
-    final double mu = 10;
+    /** smoothing parameter **/
+    public double mu = 10;
+    /** Number of candidates to be scored in the second phase **/
+    public int survivingCandidates = 10000;
     protected final float minContext = -30;
+    /** context weight **/
     protected final float corr = ( float ) 1;
 
     public ContextualRanker( QuasiSuccinctEntityHash hash ) {
@@ -39,11 +43,11 @@ public class ContextualRanker extends ProbabilityRanker {
      * of them scored)
      */
     @Override
-    public EntityScore getHighestRankedEntity( CandidatesInfo infos, EntityContext context, String surfaceForm, int length, int k ) {
+    public EntityScore getHighestRankedEntity( CandidatesInfo infos, EntityContext context, String surfaceForm, int length ) {
         if( infos.maxScore != null ) return infos.maxScore;
         double maxS = -Float.MAX_VALUE;
         final int l = infos.entities.length;
-        final float[] scores = firstPhaseRanking( infos.entities, infos.QAF, infos.QAT, infos.QAC, infos.LAF, infos.LAT, l, surfaceForm );
+        final float[] scores = firstPhaseRanking( infos.entities, infos.QAF, infos.QAT, infos.QAC, infos.LAF, infos.LAT, l );
         //first phase
         Integer[] idx = new Integer[ l ];
         for( int i = 0; i < l; i++ )
@@ -61,13 +65,13 @@ public class ContextualRanker extends ProbabilityRanker {
         queryNormalizer = context.queryNormalizer();
 
         //second phase
-        for( int i = 0; i < l && i < k; i++ ) {
+        for( int i = 0; i < l && i < survivingCandidates; i++ ) {
             final float eScore = scores[ idx[ i ] ];
             final Entity e = infos.entities[ idx[ i ] ];
             if( eScore < maxS ) { //max ctx = 1 nobody else can win
                 break;
             }
-            double s = secondPhaseRanking( e, length, eScore, context, surfaceForm, infos );
+            double s = secondPhaseRanking( e, length, eScore, context );
             if( s > maxS ) {
                 maxS = s;
                 maxE = e;
@@ -82,17 +86,11 @@ public class ContextualRanker extends ProbabilityRanker {
      * global and local statistics. This method should be fast, as it scores
      * fully all the candidates for the segments.
      *
-     * @param entities
-     * @param QAF
-     * @param QAT
-     * @param QAC
-     * @param LAF
-     * @param LAT
-     * @param l
-     * @param surfaceForm
+     * @param entities array of entities to be scored
+     * @param l number of entities in the array to be scored
      * @return
      */
-    public float[] firstPhaseRanking( Entity entities[], double QAF, double QAT, double QAC, double LAF, double LAT, int l, String surfaceForm ) {
+    public float[] firstPhaseRanking( Entity entities[], double QAF, double QAT, double QAC, double LAF, double LAT, int l ) {
         float[] scores = new float[ l ];
         final float priorQ = ( float ) ( ( QAT + 1 ) / ( QAT + LAT + 2 ) );
         final float priorA = 1 - priorQ;
@@ -115,19 +113,14 @@ public class ContextualRanker extends ProbabilityRanker {
     /**
      * Computes a second phase score for one entity. Subclasses must re-implement this method to redefine the scoring mechanism
      *
-     * @param e
-     * @param len
-     * @param score
-     * @param context
-     * @param surfaceForm
-     * @param info
-     * @return
+     * @param e entity to be scored
+     * @param len lenght of the surface form
+     * @param score first phase score
+     * @param context entity context to use in scoring
+     * @return score of e given the context and the surface form
      */
-    public double secondPhaseRanking( Entity e, int len, float score, EntityContext context, String surfaceForm, CandidatesInfo info ) {
+    public double secondPhaseRanking( Entity e, int len, float score, EntityContext context ) {
         float contextScore = ( float ) context.getEntityContextScore( e ); //log-p, score is p
-        //System.out.println( hash.getEntityName( e.id ) + " 1st [ " +  score + " ] " + " ctx [ " + contextScore + "] + Math.log(score)= " + Math.log( score ) + "" +
-          //      "total "+ ( contextScore * corr + Math.log( score ) ) ) ;
-
         contextScore = contextScore < minContext ? minContext : contextScore;
         //float lenPrior = 1F / ( 1F + (float) Math.exp( -1 * ( len - 1 ) ) );
         double fScore = contextScore * corr + Math.log( score );
@@ -149,11 +142,11 @@ public class ContextualRanker extends ProbabilityRanker {
         float p_e_w = ( float ) ( ( e.LET + 1 ) / ( normalizerAnchor ) );
         float p_e_l_a_w = ( float ) ( ( e.LAET + mu * p_e_w ) / ( info.LAF + mu ) );
         float p_e_l_a = ( float ) ( ( e.QAEF + mu * p_e ) / ( info.QAF + mu ) );
-        if( p_e_l_a_w > 1 ) p_e_l_a_w = 1; //TODO remove when the datapack is fixed
+        if( p_e_l_a_w > 1 ) p_e_l_a_w = 1;
         if( p_e_l_a > 1 ) p_e_l_a = 1;
         float s1 = priorQ * ( p_l_a * p_e_l_a + ( 1 - p_l_a ) * p_e ) + priorA * ( p_l_a_w * p_e_l_a_w + ( 1 - p_l_a_w ) * p_e_w );
         queryNormalizer = context.queryNormalizer();
-        double s = secondPhaseRanking( e, length, s1, context, surfaceForm, info );
+        double s = secondPhaseRanking( e, length, s1, context );
 
         return s;
     }

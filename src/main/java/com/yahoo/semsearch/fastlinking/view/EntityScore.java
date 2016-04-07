@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 /**
  * Class for holding a score for a given entity. It also contains a HashMap for holding feature values. 
- * @author roi
+ * @author roi blanco
  *
  */
 public class EntityScore implements Comparable<EntityScore>{

@@ -8,9 +8,9 @@ import java.util.ArrayList;
  * EntityContext class will be used. This might be useful for caching, for
  * instance. The vanilla class implements an empty method (returns a score of 0
  * for every context).
- * Subclasses must at least implement the {@link #getEntityContextScorer(Entity e) getEntityContextScorer method
+ * Subclasses must at least implement the {@link #getEntityContextScore(Entity ) getEntityContextScorer method
  *
- * @author roi
+ * @author roi blanco
  */
 public abstract class EntityContext {
     public ArrayList<String> words;
@@ -21,7 +21,7 @@ public abstract class EntityContext {
      * Call this method prior to scoring the context. This is useful to reuse as many calculations as possible in the context scorer (most likely many query
      * segments will share contexts)
      *
-     * @param words
+     * @param words list of strings to be used as the context input
      */
     public void setContextWords( ArrayList<String> words ) {
         if( words.size() == 0 ) return;
@@ -35,10 +35,9 @@ public abstract class EntityContext {
     }
 
     /**
-     * Returns a score for the entity e using the words set previously using {@link #setContextWords(ArrayList<String> words) setContextWords}
-     *
-     * @param e
-     * @return
+     * Returns a score for the entity e using the words set previously using {@link #setContextWords(ArrayList<String> ) setContextWords}
+     * @param e entity to be scored
+     * @return context score for e (context has to be previously set)
      */
     public abstract double getEntityContextScore( Entity e );
 
@@ -49,7 +48,7 @@ public abstract class EntityContext {
     /**
      * Provides a number to make scores comparable across queries. This normalizer is dependent on the method used to score entities.
      *
-     * @return
+     * @return the value to normalize the per query score to
      */
     public float queryNormalizer() {
         return 1;

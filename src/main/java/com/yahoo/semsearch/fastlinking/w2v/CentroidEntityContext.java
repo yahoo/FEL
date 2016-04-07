@@ -18,7 +18,7 @@ import com.yahoo.semsearch.fastlinking.view.EntityContext;
  * - centroid of the context words
  * - centroid of the entity words
  *
- * @author roi
+ * @author roi blanco
  */
 public class CentroidEntityContext extends EntityContext {
     protected EntityScorer scorer;
@@ -29,10 +29,11 @@ public class CentroidEntityContext extends EntityContext {
     //hack for speeding up the id look-ups
     private ArrayList<Long> idMapping;
 
-    public CentroidEntityContext() {};
+    public CentroidEntityContext() {}
 
-    public CentroidEntityContext( String vector, String entities, AbstractEntityHash hash ) throws
-            ClassNotFoundException, IOException {
+    ;
+
+    public CentroidEntityContext( String vector, String entities, AbstractEntityHash hash ) throws ClassNotFoundException, IOException {
         Word2VecCompress vec = ( Word2VecCompress ) BinIO.loadObject( entities );
         scorer = new CentroidEntityScorer( ( Word2VecCompress ) BinIO.loadObject( vector ), vec );
         this.hash = ( QuasiSuccinctEntityHash ) hash; //TODO --- this is here for debugging purposes only
@@ -73,7 +74,6 @@ public class CentroidEntityContext extends EntityContext {
 
     @Override
     public double getEntityContextScore( Entity e ) {
-        //TODO change here for dynamic pruning
         return context.score( idMapping.get( e.id ) );
     }
 

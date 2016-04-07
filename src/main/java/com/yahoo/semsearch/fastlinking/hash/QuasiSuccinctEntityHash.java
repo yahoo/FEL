@@ -41,9 +41,9 @@ import com.yahoo.semsearch.fastlinking.view.Entity;
 import com.yahoo.semsearch.fastlinking.view.StringAndCandidate;
 
 /**
- * Uber class holding compressed aliases and features for entities .
+ * Uber class holding compressed aliases and features for entities and their stats
  *
- * @author roi
+ * @author roi blanco
  */
 public class QuasiSuccinctEntityHash extends AbstractEntityHash implements Serializable {
     private final static Logger LOGGER = LoggerFactory.getLogger( QuasiSuccinctEntityHash.class );
@@ -59,9 +59,8 @@ public class QuasiSuccinctEntityHash extends AbstractEntityHash implements Seria
     public final FrontCodedStringList entityNames;
     public CountAndRecordStats stats;
 
-    public QuasiSuccinctEntityHash( Object2LongFunction<? extends CharSequence> hash, EliasFanoMonotoneLongBigList[]
-            pointers, EliasFanoLongBigList[] values,
-                                    EliasFanoLongBigList entityValues, FrontCodedStringList frontCodedStringList ) {
+    public QuasiSuccinctEntityHash( Object2LongFunction<? extends CharSequence> hash, EliasFanoMonotoneLongBigList[] pointers, EliasFanoLongBigList[] values, EliasFanoLongBigList entityValues, FrontCodedStringList
+            frontCodedStringList ) {
         super( hash );
         this.pointers = pointers;
         this.values = values;
@@ -80,8 +79,8 @@ public class QuasiSuccinctEntityHash extends AbstractEntityHash implements Seria
     /**
      * returns the Entity entity for a given id
      *
-     * @param id
-     * @return
+     * @param id entity identifier
+     * @return entity object for the id specified
      */
     public Entity getEntity( final long id ) {
         Entity e = new Entity();
@@ -98,16 +97,13 @@ public class QuasiSuccinctEntityHash extends AbstractEntityHash implements Seria
     /**
      * returns the features in a CandidatesInfo class that belong to a particular index
      *
-     * @param index
-     * @return
+     * @param index where in the compressed stream we have to look up the info
+     * @return candidates info object for the specified index
      */
     protected CandidatesInfo candidatesInfo( long index ) {
-        final long startEnd[] = pointers[ ( int ) ( index / ALIASESPERBATCH ) ].get( index % ALIASESPERBATCH, new
-				long[ 2 ] );
-        final int numEntities = ( int ) ( ( startEnd[ 1 ] - startEnd[ 0 ] - PER_CANDIDATE_FEATURES ) /
-				PER_ENTITY_CANDIDATE_FEATURES );
-        long t[] = values[ ( int ) ( index / ALIASESPERBATCH ) ].get( startEnd[ 0 ], new long[ ( int ) ( startEnd[ 1
-				] - startEnd[ 0 ] ) ] );
+        final long startEnd[] = pointers[ ( int ) ( index / ALIASESPERBATCH ) ].get( index % ALIASESPERBATCH, new long[ 2 ] );
+        final int numEntities = ( int ) ( ( startEnd[ 1 ] - startEnd[ 0 ] - PER_CANDIDATE_FEATURES ) / PER_ENTITY_CANDIDATE_FEATURES );
+        long t[] = values[ ( int ) ( index / ALIASESPERBATCH ) ].get( startEnd[ 0 ], new long[ ( int ) ( startEnd[ 1 ] - startEnd[ 0 ] ) ] );
         long u[] = new long[ PER_ENTITY_FEATURES ];
         Entity[] e = new Entity[ numEntities ];
         for( int i = 0; i < numEntities; i++ ) {
@@ -121,8 +117,7 @@ public class QuasiSuccinctEntityHash extends AbstractEntityHash implements Seria
             e[ i ].LET = ( int ) u[ 1 ];
             e[ i ].type = ( short ) u[ 2 ];
         }
-        return new CandidatesInfo( e, ( int ) t[ 0 ], ( int ) t[ 1 ], ( int ) t[ 2 ], ( int ) t[ 3 ], ( int ) t[ 4 ]
-		);//, (int) t[ 5 ] );
+        return new CandidatesInfo( e, ( int ) t[ 0 ], ( int ) t[ 1 ], ( int ) t[ 2 ], ( int ) t[ 3 ], ( int ) t[ 4 ] );//, (int) t[ 5 ] );
     }
 
     /**
@@ -130,26 +125,20 @@ public class QuasiSuccinctEntityHash extends AbstractEntityHash implements Seria
      * minimal perfect hash functions, entity identifiers, and all the entity features, provided tha
      * that every feature is an integer.
      *
-     * @param args
+     * @param args command line args; see -help
      * @throws Exception
      */
     public static void main( String[] args ) throws Exception {
-        SimpleJSAP jsap = new SimpleJSAP( QuasiSuccinctEntityHash.class.getName(), "Creates a MPHF from a file with " +
-				"the candidates info", new Parameter[]{
-                new FlaggedOption( "input", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'i', "input", "Input " +
-						"file" ),
-                new FlaggedOption( "entity2id", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'e', "entities",
-                        "TAB-separated entity names and corresponding ids" ),
-                new FlaggedOption( "wikiThreshold", JSAP.INTEGER_PARSER, "0", JSAP.NOT_REQUIRED, 'w',
-						"wikiThreshold", "Minimum number of anchors to store a candidate" ),
-                new FlaggedOption( "queryThreshold", JSAP.INTEGER_PARSER, "0", JSAP.NOT_REQUIRED, 'q',
-						"queryThreshold", "Minimum number of clicks to store a candidate" ),
-                new FlaggedOption( "output", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'o', "output",
-						"Compressed version" ), } );
+        SimpleJSAP jsap = new SimpleJSAP( QuasiSuccinctEntityHash.class.getName(), "Creates a MPHF from a file with the candidates info", new Parameter[]{
+                new FlaggedOption( "input", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'i', "input", "Input " + "file" ),
+                new FlaggedOption( "entity2id", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'e', "entities", "TAB-separated entity names and corresponding ids" ),
+                new FlaggedOption( "wikiThreshold", JSAP.INTEGER_PARSER, "0", JSAP.NOT_REQUIRED, 'w', "wikiThreshold", "Minimum number of anchors to store a candidate" ),
+                new FlaggedOption( "queryThreshold", JSAP.INTEGER_PARSER, "0", JSAP.NOT_REQUIRED, 'q', "queryThreshold", "Minimum number of clicks to store a candidate" ),
+                new FlaggedOption( "output", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'o', "output", "Compressed version" ), }
+        );
         JSAPResult jsapResult = jsap.parse( args );
         if( jsap.messagePrinted() ) return;
-        final Iterable<StringAndCandidate> stringAndCandidates = FormatReader.stringAndCandidates( jsapResult
-				.getString( "input" ), jsapResult.getInt( "queryThreshold" ), jsapResult.getInt( "wikiThreshold" ) );
+        final Iterable<StringAndCandidate> stringAndCandidates = FormatReader.stringAndCandidates( jsapResult.getString( "input" ), jsapResult.getInt( "queryThreshold" ), jsapResult.getInt( "wikiThreshold" ) );
 
         final BufferedReader linesC = new BufferedReader( new FileReader( jsapResult.getString( "entity2id" ) ) );
         int maxIndex = 0;
@@ -164,7 +153,7 @@ public class QuasiSuccinctEntityHash extends AbstractEntityHash implements Seria
 
         // A list containing entity names at id positions
 
-        ObjectArrayList<String> entityNames = new ObjectArrayList<String>( maxIndex );
+        ObjectArrayList<String> entityNames = new ObjectArrayList<>( maxIndex );
         LOGGER.info( "Storing entity names" );
         while( ( line = lines.readLine() ) != null ) {
             String[] parts = line.split( "\t" );
@@ -172,9 +161,8 @@ public class QuasiSuccinctEntityHash extends AbstractEntityHash implements Seria
                 final int index = Integer.parseInt( parts[ 1 ] );
                 if( index >= entityNames.size() ) entityNames.size( index + 1 );
                 final String oldValue = entityNames.set( index, parts[ 0 ] );
-                if( oldValue != null )
-                    LOGGER.warn( "Duplicate index " + index + " for names \"" + parts[ 0 ] + "\" and \"" + oldValue +
-							"\"" );
+                if( oldValue != null ) LOGGER.warn( "Duplicate index " + index + " for names \"" + parts[ 0 ] + "\" and \"" + oldValue +
+                        "\"" );
             } catch( NumberFormatException e ) {
                 LOGGER.error( "Wrong line (skipping) --> " + line );
             }
@@ -198,8 +186,7 @@ public class QuasiSuccinctEntityHash extends AbstractEntityHash implements Seria
         tempFile.deleteOnExit();
         int batchNumber = 0;
         tempFiles.put( batchNumber, tempFile );
-        DataOutputStream values = new DataOutputStream( new FastBufferedOutputStream( new FileOutputStream( tempFile
-		) ) );
+        DataOutputStream values = new DataOutputStream( new FastBufferedOutputStream( new FileOutputStream( tempFile ) ) );
         cutPoints.add( 0 );
         valuesArray.put( batchNumber, values );
         pointersArray.put( batchNumber, cutPoints );
@@ -228,7 +215,6 @@ public class QuasiSuccinctEntityHash extends AbstractEntityHash implements Seria
             }
 
             CandidatesInfo ci = sc.candidatesInfo;
-            //alias + \u0001 + QAF + \u0001 + QAT + \u0001 + MAF + \u0001 + MAT + \u0001 + LAF + \u0001 + LAT
             values.writeInt( ( int ) ci.QAF );
             values.writeInt( ( int ) ci.QAT );
             values.writeInt( ( int ) ci.QAC );
@@ -243,9 +229,6 @@ public class QuasiSuccinctEntityHash extends AbstractEntityHash implements Seria
                 values.writeInt( ( int ) e.LAET );
                 values.writeInt( ( int ) e.QAEF );
                 valuesSize += PER_ENTITY_CANDIDATE_FEATURES;
-
-                //        entity_id + \u0001 + type_id + \u0001 + QEF + \u0001 + QAEF + \u0001 + MET + \u0001 + MAET
-				// + \u0001 + LET + \u0001 + LAET
                 entityValues.set( e.id * PER_ENTITY_FEATURES, ( int ) e.QEF );
                 //	entityValues.set( e.id * PER_ENTITY_FEATURES + 1, (int) e.MET );
                 entityValues.set( e.id * PER_ENTITY_FEATURES + 1, ( int ) e.LET );
@@ -275,20 +258,10 @@ public class QuasiSuccinctEntityHash extends AbstractEntityHash implements Seria
             }
         };
 
-        //ShiftAddXorSignedStringMap surfaceForm2Position = new ShiftAddXorSignedStringMap( surfaceForms.iterator(),
-		// new MWHCFunction<CharSequence>(
-        //	surfaceForms, TransformationStrategies.utf16() ) );
 
-        //ShiftAddXorSignedStringMap surfaceForm2Position = new ShiftAddXorSignedStringMap( surfaceForms.iterator(),
-		// new MWHCFunction.Builder<CharSequence>()
-        //	.keys( surfaceForms ).transform( TransformationStrategies.utf16() ).tempDir( new File( tempPath ) ).build
-		// () );
         ShiftAddXorSignedStringMap surfaceForm2Position = new ShiftAddXorSignedStringMap( surfaceForms.iterator(),
-				new MWHCFunction.Builder<CharSequence>()
-                .keys( surfaceForms ).transform( TransformationStrategies.utf16() ).build() );
+                new MWHCFunction.Builder<CharSequence>().keys( surfaceForms ).transform( TransformationStrategies.utf16() ).build() );
 
-        //MWHCFunction<CharSequence> surfaceForm2Position = new MWHCFunction.Builder<CharSequence>().keys(
-		// surfaceForms ).transform( TransformationStrategies.utf16() ).signed( 5 ).build();
         EliasFanoLongBigList[] valuesA = new EliasFanoLongBigList[ tempFiles.size() ];
         EliasFanoMonotoneLongBigList[] cutPointsArray = new EliasFanoMonotoneLongBigList[ tempFiles.size() ];
         for( int i = 0; i < tempFiles.size(); i++ ) {
@@ -300,16 +273,14 @@ public class QuasiSuccinctEntityHash extends AbstractEntityHash implements Seria
             };
             long lowerBound = Long.MAX_VALUE;
             LongIterator iterator = lI.iterator();
-            while( iterator.hasNext() )
-                lowerBound = Math.min( lowerBound, iterator.nextLong() );
+            while( iterator.hasNext() ) lowerBound = Math.min( lowerBound, iterator.nextLong() );
 
             cutPointsArray[ i ] = new EliasFanoMonotoneLongBigList( pointersArray.get( i ) );
             valuesA[ i ] = new EliasFanoLongBigList( lI.iterator(), lowerBound, true );
         }
         LOGGER.info( "#Batches= " + tempFiles.size() );
-        QuasiSuccinctEntityHash quasiSuccinctEntityHash = new QuasiSuccinctEntityHash( surfaceForm2Position,
-				cutPointsArray, valuesA, new EliasFanoLongBigList( entityValues ),
-                new FrontCodedStringList( entityNames, 8, true ) );
+        QuasiSuccinctEntityHash quasiSuccinctEntityHash = new QuasiSuccinctEntityHash( surfaceForm2Position, cutPointsArray, valuesA, new EliasFanoLongBigList( entityValues ), new FrontCodedStringList( entityNames, 8,
+                true ) );
         LOGGER.info( "Creating stats" );
         quasiSuccinctEntityHash.stats = CountAndRecordStats.createStats( quasiSuccinctEntityHash );
         BinIO.storeObject( quasiSuccinctEntityHash, jsapResult.getString( "output" ) );
@@ -322,9 +293,9 @@ public class QuasiSuccinctEntityHash extends AbstractEntityHash implements Seria
      * Checks if the map has been created correctly, by decompressing the data structure and checking it against the
      * original input file
      *
-     * @param jsapResult
-     * @param stringAndCandidates
-     * @return
+     * @param jsapResult command line params
+     * @param stringAndCandidates the compressed features and strings
+     * @return true if the test passes
      * @throws IOException
      * @throws ClassNotFoundException
      */

@@ -9,10 +9,10 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * This class is a wrapper forwarding everything to Word2VecCompress.
+ * This class is a wrapper forwarding everything to Word2VecCompress. It also provides a command line tool for computing word similarity
  * It has a main method that can be used to check similarities between word sets from the command line.
  *
- * @author roi
+ * @author roi blanco
  */
 public class CompressedW2V implements WordVectors, Serializable {
 
@@ -64,7 +64,7 @@ public class CompressedW2V implements WordVectors, Serializable {
         final BufferedReader br = new BufferedReader( new InputStreamReader( System.in ) );
         CompressedW2V vectors = new CompressedW2V( args[ 0 ] );
         String q;
-        for(; ; ) {
+        for( ; ; ) {
             System.out.print( ">" );
             q = br.readLine();
             if( q == null ) {
@@ -73,27 +73,23 @@ public class CompressedW2V implements WordVectors, Serializable {
             }
             if( q.length() == 0 ) continue;
             String[] strings = q.split( "/" );
-
-            //float[] q1 = WordVectorsUtils.centroid( Arrays.asList( strings[ 0 ].split( " " ) ), vectors.N, vectors );
-            //float[] q2 = WordVectorsUtils.centroid( Arrays.asList( strings[ 1 ].split( " " ) ), vectors.N, vectors );
-            //float sim = WordVectorsUtils.sim( q1, q2, vectors.N );
             List<String> w = Arrays.asList( strings[ 0 ].split( " " ) );
             EntityEmbeddings eb = new EntityEmbeddings();
-            float sim = scorer.score(  strings[ 1 ], w );
+            float sim = scorer.score( strings[ 1 ], w );
             float[] entity = wv.get( strings[ 1 ] );
-            if( entity != null ){
-            for( int i = 0; i <  w.size(); i++){
-                float[] v = vectors.getVectorOf( w.get( i ) );
-                if( v != null){
-                    double score = eb.scoreLR( entity, v );
-                    System.out.println( "score LR " + score);
+            if( entity != null ) {
+                for( int i = 0; i < w.size(); i++ ) {
+                    float[] v = vectors.getVectorOf( w.get( i ) );
+                    if( v != null ) {
+                        double score = eb.scoreLR( entity, v );
+                        System.out.println( "score LR " + score );
+                    }
+                    System.out.println();
                 }
-                System.out.println( );
-            }
 
-            System.out.println( " sim ( [ " + strings[ 0 ] + "] , [" + strings[ 1 ] + "] ) = " + sim );
-            }else{
-                System.out.println("entity " +  strings[1] + " not found");
+                System.out.println( " sim ( [ " + strings[ 0 ] + "] , [" + strings[ 1 ] + "] ) = " + sim );
+            } else {
+                System.out.println( "entity " + strings[ 1 ] + " not found" );
             }
         }
     }

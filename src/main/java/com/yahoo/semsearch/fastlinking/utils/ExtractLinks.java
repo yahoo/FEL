@@ -21,6 +21,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Extracts the links of wikipedia pages
+ * @author roi blanco
+ */
 public class ExtractLinks
 implements IArticleFilter {
     Pattern pattern = Pattern.compile("(.*)href=\"/(.*?)\"(.*)");

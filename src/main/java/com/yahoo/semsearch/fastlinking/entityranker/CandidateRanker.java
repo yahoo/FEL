@@ -26,12 +26,12 @@ public abstract class CandidateRanker {
      * Ranks a set of entities for a given query segment. Internally it just
      * selects the highest ranked entity and returns it
      * 
-     * @param infos
-     * @param context
-     * @param q
-     * @param len
-     * @param k
-     * @return
+     * @param infos information about the current candidates for the surface form
+     * @param context context to use to rank the entity
+     * @param length length of the surface form
+	 * @param surfaceForm string from which we are selecting the candidate entities
+     * @param k number of top candidates to return
+     * @return k highest scored entities
      * @throws InterruptedException
      */
     public ArrayList<EntityScore> getTopKEntities( CandidatesInfo infos, EntityContext context, String surfaceForm, int length, int k )
@@ -62,15 +62,14 @@ public abstract class CandidateRanker {
     /**
      * Returns the highest ranked entity, along with its score, for a given
      * query
-     * 
-     * @param infos
-     * @param context
-     * @param surfaceForm
-     * @param length
-     * @param k
-     * @return
+     *
+     * @param infos information about the current candidates for the surface form
+     * @param context context to use to rank the entity
+     * @param length length of the surface form
+     * @param surfaceForm string from which we are selecting the candidate entities
+     * @return top scoring entity for the surface form
      */
-    public EntityScore getHighestRankedEntity( CandidatesInfo infos, EntityContext context, String surfaceForm, int length, int k ) {
+    public EntityScore getHighestRankedEntity( CandidatesInfo infos, EntityContext context, String surfaceForm, int length ) {
 	if ( infos.maxScore != null ) return infos.maxScore;
 	int index = 0;
 	double maxS = -Double.MAX_VALUE;
@@ -89,12 +88,12 @@ public abstract class CandidateRanker {
     /**
      * Scores one entity with respect to a surface form (query segment)
      * 
-     * @param e
-     * @param info
-     * @param context
-     * @param surfaceForm
-     * @param length
-     * @return
+     * @param e entity to be ranked
+     * @param info information about the current candidates for the surface form
+     * @param context context to use to rank the entity
+     * @param length length of the surface form
+     * @param surfaceForm string from which we are selecting the candidate entities
+     * @return score of e for the given context and surface form
      */
     public abstract double rank( Entity e, CandidatesInfo info, EntityContext context, String surfaceForm, int length );
 

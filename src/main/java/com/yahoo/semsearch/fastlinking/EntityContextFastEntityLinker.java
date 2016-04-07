@@ -30,33 +30,34 @@ import com.yahoo.semsearch.fastlinking.w2v.LREntityContext;
 
 /**
  * Entity linker that can use a context class to score candidates.
- * Use like
- * java -Xmx10G com.yahoo.semsearch.fastlinking.EntityContextFastEntityLinker -h data/newhash -e data/ENTITIES.PHRASE.model -u data/PHRASE.model -m scratch/type_data/entity2types.txt
+ * Example usage:
+ * java -Xmx5G com.yahoo.semsearch.fastlinking.EntityContextFastEntityLinker -h hash -e entities -v words -m scratch/type_data/entity2types.txt
  *
- * @author roi
+ * @author roi blanco
  */
 public class EntityContextFastEntityLinker extends FastEntityLinker {
 
     public EntityContextFastEntityLinker( QuasiSuccinctEntityHash hash, EntityContext queryContext ) {
-        super( hash, hash.stats, queryContext );
-    }
-
-    public EntityContextFastEntityLinker( QuasiSuccinctEntityHash hash, CountAndRecordStats stats, EntityContext queryContext ) {
-        super( hash, stats, queryContext );
+        super( hash, queryContext );
         this.ranker = new ContextualRanker( hash );
     }
 
-
+    /**
+     * Context-aware command line entity linker
+     * @param args arguments (see -help for further info)
+     * @throws Exception
+     */
     public static void main( String args[] ) throws Exception {
-
         SimpleJSAP jsap = new SimpleJSAP( EntityContextFastEntityLinker.class.getName(), "Interactive mode for entity linking",
-                new Parameter[]{ new FlaggedOption( "hash", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'h', "hash", "quasi succint hash" ), new FlaggedOption( "vectors", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'v', "vectors", "Unigram word vectors file" ), new FlaggedOption(
-                "types", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 't', "types", "Type mapping file (for display)" ), new FlaggedOption( "labels", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED,
-                'l', "labels", "File containing query2entity labels" ), new FlaggedOption( "id2type", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'i', "id2type", "File with the id2type mapping" ), new
-                Switch( "centroid", 'c', "centroid", "Use centroid-based distances and not LR" ),
+                new Parameter[]{
+                        new FlaggedOption( "hash", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'h', "hash", "quasi succint hash" ),
+                        new FlaggedOption( "vectors", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'v', "vectors", "Word vectors file" ),
+                        new FlaggedOption( "labels", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'l', "labels", "File containing query2entity labels" ), new FlaggedOption( "id2type", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'i', "id2type", "File with the id2type mapping" ),
+                        new Switch( "centroid", 'c', "centroid", "Use centroid-based distances and not LR" ),
                         new FlaggedOption( "map", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'm', "map", "Entity 2 type mapping " ),
                         new FlaggedOption( "threshold", JSAP.STRING_PARSER, "-20", JSAP.NOT_REQUIRED, 'd', "threshold", "Score threshold value " ),
-                        new FlaggedOption( "entities", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'e', "entities", "Entities word vectors file" ), } );
+                        new FlaggedOption( "entities", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'e', "entities", "Entities word vectors file" ), }
+        );
 
         JSAPResult jsapResult = jsap.parse( args );
         if( jsap.messagePrinted() ) return;
@@ -71,7 +72,7 @@ public class EntityContextFastEntityLinker extends FastEntityLinker {
         }
         HashMap<String, ArrayList<EntityRelevanceJudgment>> labels = null;
         if( jsapResult.getString( "labels" ) != null ) {
-            labels = readTrainingDataALP( jsapResult.getString( "labels" ) );
+            labels = readTrainingData( jsapResult.getString( "labels" ) );
         }
 
         String map = jsapResult.getString( "map" );
@@ -80,16 +81,7 @@ public class EntityContextFastEntityLinker extends FastEntityLinker {
 
         if( map != null ) entities2Type = readEntity2IdFile( map );
 
-        String types = jsapResult.getString( "types" );
-        HashMap<Short, String> typeMapping; //only for display purposes
-        if( types != null ) {
-            typeMapping = readTypeMapping( types );
-        } else {
-            typeMapping = new HashMap<Short, String>();
-            for( short i = 0; i < Short.MAX_VALUE; i++ )
-                typeMapping.put( i, new Short( i ).toString() );
-        }
-        EntityContextFastEntityLinker linker = new EntityContextFastEntityLinker( hash, hash.stats, queryContext );
+        EntityContextFastEntityLinker linker = new EntityContextFastEntityLinker( hash, queryContext );
 
 
         final BufferedReader br = new BufferedReader( new InputStreamReader( System.in ) );
@@ -153,12 +145,12 @@ public class EntityContextFastEntityLinker extends FastEntityLinker {
     /**
      * Reads a type mapping file (from short integer to string). Useful for display
      *
-     * @param types
-     * @return
+     * @param types type remapping
+     * @return hashmap with the remmaped types
      * @throws IOException
      */
     public static HashMap<Short, String> readTypeMapping( String types ) throws IOException {
-        HashMap<Short, String> typeMapping = new HashMap<Short, String>();
+        HashMap<Short, String> typeMapping = new HashMap<>();
         final BufferedReader lines = new BufferedReader( new FileReader( types ) );
         String line;
         while( ( line = lines.readLine() ) != null ) {
@@ -177,12 +169,12 @@ public class EntityContextFastEntityLinker extends FastEntityLinker {
     /**
      * Reads an entity to identifier mapping file.
      *
-     * @param entities
-     * @return
+     * @param entities file name containing the entity mapping
+     * @return hashmap with the entity to id mapping
      * @throws IOException
      */
     public static HashMap<String, String> readEntity2IdFile( String entities ) throws IOException {
-        HashMap<String, String> entity2Id = new HashMap<String, String>();
+        HashMap<String, String> entity2Id = new HashMap<>();
         final BufferedReader lines = new BufferedReader( new FileReader( entities ) );
         String line;
         while( ( line = lines.readLine() ) != null ) {
@@ -200,10 +192,9 @@ public class EntityContextFastEntityLinker extends FastEntityLinker {
 
     @Override
     public void setContext( Span[] parts, int left, int right ) {
-        ArrayList<String> ctxWords = new ArrayList<String>();
+        ArrayList<String> ctxWords = new ArrayList<>();
         for( Span p : parts )
             ctxWords.add( p.getSpan() );
-        ///TODO this logic is a bit messed up
         context.setContextWords( ctxWords );
     }
 
