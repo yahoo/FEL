@@ -7,13 +7,17 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 
 /**
- * java -Xmx5G -cp FEL-0.1.0-fat.jar com.yahoo.semsearch.fastlinking.w2v.Quantizer -i /mnt/scratch3/ymehdad/embeddings/en/wiki/enwik-s3-iter3.txt -o /mnt/scratch3/roi/quant -d -q 9 -h
- * @author roi
+ * Quantizes a word2vec-like vector file given a quantization factor, or it will binary search for the optimum one (given a reconstruction error target)
+ * java -Xmx5G -cp FEL-0.1.0-fat.jar com.yahoo.semsearch.fastlinking.w2v.Quantizer -i vector -o quantized -d -q 9 -h
+ * @author roi blanco
  */
 
 public class Quantizer {
     private static Logger log = LoggerFactory.getLogger( Quantizer.class );
 
+    /**
+     * Inner class for holding the error and number of words
+     */
     public class ErrorHolder {
         public int words;
         public double error;
@@ -24,6 +28,11 @@ public class Quantizer {
         }
     }
 
+    /**
+     * Computes the number of bits needed to store a vector
+     * @param v vector
+     * @return number of bits of the compressed representation
+     */
     public double golombBits( float[] v ) {
         double[] nat_v = new double[ v.length ];
         float abs_sum = 0;
@@ -48,9 +57,9 @@ public class Quantizer {
      * Format: <numWords> <vector size> <quantization factor> Words (one per
      * line) Vectors (one per line)
      *
-     * @param modelFile
-     * @param outputFile
-     * @param q
+     * @param modelFile vector file
+     * @param outputFile output file
+     * @param q quantization factor
      * @throws IOException
      */
     public void serialize( String modelFile, String outputFile, int q, int numberOfWords, boolean hashheader ) throws
@@ -91,13 +100,22 @@ public class Quantizer {
     }
 
 
-    public void serializeW2VFormat( String modelFile, String outputFile, int q, int numberOfWords, boolean hashheader ) throws
+    /**
+     * Writes out to disk the quantized vectors
+     * @param modelFile input file
+     * @param outputFile output file
+     * @param q quantized factor
+     * @param numberOfWords number of entries in the file
+     * @param hasheader whether the file has a header or not
+     * @throws IOException
+     */
+    public void serializeW2VFormat( String modelFile, String outputFile, int q, int numberOfWords, boolean hasheader ) throws
             IOException {
         log.info( "Serializing quantized model to " + outputFile + " using q = " + q );
         BufferedWriter bw = new BufferedWriter( new OutputStreamWriter( new FileOutputStream( outputFile ), "UTF-8" ) );
         BufferedReader br = new BufferedReader( new InputStreamReader( new FileInputStream( new File( modelFile ) ) ) );
         String line = null;
-        if( hashheader ) br.readLine();
+        if( hasheader ) br.readLine();
 
         line = br.readLine();
         int len = line.split( "\\s+" ).length - 1;
@@ -106,7 +124,7 @@ public class Quantizer {
         br.close();
 
         br = new BufferedReader( new InputStreamReader( new FileInputStream( modelFile ), "UTF-8" ) );
-        if( hashheader) br.readLine(); //skip the header
+        if( hasheader) br.readLine(); //skip the header
         while( ( line = br.readLine() ) != null ) {
             String[] parts = line.split( "\\s+" );
             bw.write( parts[ 0 ] + " ");
@@ -123,9 +141,10 @@ public class Quantizer {
     /**
      * To avoid storing everything in memory, we read the input file each time
      *
-     * @param modelFile
-     * @param q
+     * @param modelFile original vector file
+     * @param q quantization factor
      * @throws IOException
+     * @return number of words and reconstruction error
      */
     public ErrorHolder quantizeArray( String modelFile, int q ) throws IOException {
         final BufferedReader br = new BufferedReader( new InputStreamReader( new FileInputStream( new File( modelFile  ) ) ) );
@@ -145,10 +164,8 @@ public class Quantizer {
             norm = Math.sqrt( norm );
             for( int i = 1; i < parts.length; i++ ) {
                 int qa = ( int ) ( ( int ) ( Math.abs( v[ i ] ) * q ) * Math.signum( v[ i ] ) );
-                //mean_err = np.mean(np.sqrt(np.sum((dequant_A - A)**2, axis=-1)) / A_norms)
                 double dqa = ( qa + 0.5 * Math.signum( qa ) ) / q;
                 wordError += ( v[ i ] - dqa ) * ( v[ i ] - dqa );
-                //	System.out.println( v[ i ] + "\t" + qa + "\t" + dqa + " \t error " + error );
             }
             error += Math.sqrt( wordError ) / norm;
         }
@@ -156,47 +173,26 @@ public class Quantizer {
         return new ErrorHolder( items - 1, error / items );
     }
 
-    public static void main( String args[] ) throws IOException, JSAPException {
-        SimpleJSAP jsap = new SimpleJSAP( Quantizer.class.getName(), "Learns entity embeddings", new Parameter[]{
-                new FlaggedOption( "input", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'i', "input", "Entity" +
-                        " description files" ),
-                new Switch( "direct", 'd', "direct", "use a direct quantizer and not binary search" ),
-                new Switch( "hashheader", 'h', "hashheader", "if the embeddings file has a header present (will skip it)" ),
-                new FlaggedOption( "quantizer", JSAP.STRING_PARSER, "10", JSAP.NOT_REQUIRED, 'q', "quantizer", "Quantizer" +
-                        " value" ),
-                new FlaggedOption( "error", JSAP.STRING_PARSER, "0.1", JSAP.NOT_REQUIRED, 'e', "error", "Error rate" ),
-                new Switch( "w2v", 'w', "w2v", "Use the original w2v format" ),
-                new FlaggedOption( "output", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'o', "output",
-                        "Compressed version" ), } );
-        JSAPResult jsapResult = jsap.parse( args );
-        if( jsap.messagePrinted() ) return;
-        Quantizer q = new Quantizer();
-        if( jsapResult.getBoolean( "direct" )){
-            System.out.println( "Using as a quantizer " + jsapResult.getString( "quantizer" ) + " (won't attempt to search for a better one) ");
-            q.quantizeSinglePass( jsapResult.getString( "input" ), jsapResult.getString( "output" ), Integer.parseInt
-                    ( jsapResult.getString( "quantizer" ) ), jsapResult.getBoolean( "ignoreHeader" ) , jsapResult.getBoolean( "w2v" ));
-        }else{
-            q.quantize( jsapResult.getString( "input" ), jsapResult.getString( "output" ), Double.parseDouble( jsapResult
-                    .getString( "error" ) ), jsapResult.getBoolean( "hashheader" ), jsapResult.getBoolean( "w2v" ) );
-        }
-
-    }
-
-
     /**
-     * This method doesn't look for the optimal error-rate quantizer
+     * Quantizes the word vectors without attempting to look for the optimal error-rate quantizer
      *
-     * @param inputFile
-     * @param outputFile
-     * @param q
-     * @param hashheader
+     * @param inputFile initial file to quantize
+     * @param outputFile output file name
+     * @param q quantization factor
+     * @param hasheader whether the original file has a header or not
      * @throws IOException
      */
-    public void quantizeSinglePass( String inputFile, String outputFile, int q, boolean hashheader, boolean w2vFormat ) throws IOException {
-        if( !w2vFormat) serialize( inputFile, outputFile, q, countWords( inputFile, hashheader ), hashheader );
-        else  serializeW2VFormat( inputFile, outputFile, q, countWords( inputFile, hashheader ), hashheader );
+    public void quantizeSinglePass( String inputFile, String outputFile, int q, boolean hasheader, boolean w2vFormat ) throws IOException {
+        if( !w2vFormat) serialize( inputFile, outputFile, q, countWords( inputFile, hasheader ), hasheader );
+        else  serializeW2VFormat( inputFile, outputFile, q, countWords( inputFile, hasheader ), hasheader );
     }
 
+    /**
+     * @param inputfile vector file
+     * @param hasHeader whether the input file has a header or not
+     * @return number of words in the original vector file
+     * @throws IOException
+     */
     public int countWords( String inputfile, boolean hasHeader ) throws IOException {
         int items = 0;
         String line = null;
@@ -215,12 +211,12 @@ public class Quantizer {
      * reconstruction error and stop there. The other option is to select a
      * tradeoff between the two losses and optimize
      *
-     * @param inputFile
-     * @param outputFile
-     * @param hashheader
+     * @param inputFile original vector file
+     * @param outputFile output file
+     * @param hasheader whether the input file has a header or not
      * @throws IOException
      */
-    public void quantize( String inputFile, String outputFile, double targetError, boolean hashheader, boolean w2vFormat ) throws IOException {
+    public void quantize( String inputFile, String outputFile, double targetError, boolean hasheader, boolean w2vFormat ) throws IOException {
         int low = 1;
         int high = 128;
         int bestQ = 0;
@@ -228,7 +224,6 @@ public class Quantizer {
 
         //if you want rice coding you could start from 1 to 128 and increment by *2 each time (and stop when the
         // condition is met)
-
         while( high - low > 1 ) {
             bestQ = ( high + low ) / 2;
             ErrorHolder err = quantizeArray( inputFile, bestQ );
@@ -240,7 +235,36 @@ public class Quantizer {
                 high = bestQ;
             }
         }
-        if( ! w2vFormat) serialize( inputFile, outputFile, bestQ, nWords, hashheader );
-        else serializeW2VFormat( inputFile,outputFile,bestQ, nWords, hashheader );
+        if( ! w2vFormat) serialize( inputFile, outputFile, bestQ, nWords, hasheader );
+        else serializeW2VFormat( inputFile,outputFile,bestQ, nWords, hasheader );
     }
+
+    /**
+     * Main class for quantizing word vectors
+     * @param args command line arguments (see --help)
+     * @throws IOException
+     * @throws JSAPException
+     */
+    public static void main( String args[] ) throws IOException, JSAPException {
+        SimpleJSAP jsap = new SimpleJSAP( Quantizer.class.getName(), "Learns entity embeddings", new Parameter[]{
+                new FlaggedOption( "input", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'i', "input", "Entity description files" ),
+                new Switch( "direct", 'd', "direct", "use a direct quantizer and not binary search" ),
+                new Switch( "hashheader", 'h', "hashheader", "if the embeddings file has a header present (will skip it)" ),
+                new FlaggedOption( "quantizer", JSAP.STRING_PARSER, "10", JSAP.NOT_REQUIRED, 'q', "quantizer", "Quantizer value" ),
+                new FlaggedOption( "error", JSAP.STRING_PARSER, "0.1", JSAP.NOT_REQUIRED, 'e', "error", "Error rate" ),
+                new Switch( "w2v", 'w', "w2v", "Use the original w2v format" ),
+                new FlaggedOption( "output", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'o', "output", "Compressed version" ), }
+        );
+        JSAPResult jsapResult = jsap.parse( args );
+        if( jsap.messagePrinted() ) return;
+        Quantizer q = new Quantizer();
+        if( jsapResult.getBoolean( "direct" ) ) {
+            System.out.println( "Using as a quantizer " + jsapResult.getString( "quantizer" ) + " (won't attempt to search for a better one) " );
+            q.quantizeSinglePass( jsapResult.getString( "input" ), jsapResult.getString( "output" ), Integer.parseInt( jsapResult.getString( "quantizer" ) ), jsapResult.getBoolean( "ignoreHeader" ), jsapResult
+                    .getBoolean( "w2v" ) );
+        } else {
+            q.quantize( jsapResult.getString( "input" ), jsapResult.getString( "output" ), Double.parseDouble( jsapResult.getString( "error" ) ), jsapResult.getBoolean( "hashheader" ), jsapResult.getBoolean( "w2v" ) );
+        }
+    }
+
 }

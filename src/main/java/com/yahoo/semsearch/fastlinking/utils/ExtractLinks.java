@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
  */
 public class ExtractLinks
 implements IArticleFilter {
-    Pattern pattern = Pattern.compile("(.*)href=\"/(.*?)\"(.*)");
+    private final static Pattern pattern = Pattern.compile("(.*)href=\"/(.*?)\"(.*)");
     private MutableString html = new MutableString();
     private MutableString title = new MutableString();
     protected final String baseURL = "http://en.wikipedia.org/wiki/";
@@ -58,6 +58,7 @@ implements IArticleFilter {
         }
     }
 
+    @Override
     public void process(WikiArticle article, Siteinfo siteinfo) throws SAXException {
         this.title.length(0);
         this.html.length(0);
@@ -70,9 +71,9 @@ implements IArticleFilter {
         WikiModel wikiModel = new WikiModel(this.imageBaseURL, this.linkBaseURL);
         String plainText = wikiModel.render((ITextConverter)new PlainTextConverter(), article.getText());
         Set<String> links = wikiModel.getLinks();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (String link : links) {
-            sb.append(" " + this.processLink(link));
+            sb.append( " " ).append( this.processLink( link ) );
         }
         sb.append("\t");
         String slinks = sb.toString();
@@ -81,10 +82,10 @@ implements IArticleFilter {
         this.nonWord.length(0);
         this.wordReader.setReader((Reader)new FastBufferedReader(allText));
         try {
-            this.writer.append((Object)this.title + "\t");
+            this.writer.append( this.title ).append( "\t" );
             this.writer.append(slinks);
             while (this.wordReader.next(this.word, this.nonWord)) {
-                this.writer.append((Object)this.word.toLowerCase() + " ");
+                this.writer.append( this.word.toLowerCase() ).append( " " );
             }
             this.writer.append("\n");
         }
@@ -95,7 +96,7 @@ implements IArticleFilter {
 
     public String processLink(String input) {
         String jj = WikiModel.toHtml((String)("[[" + input + "]]"));
-        Matcher matcher = this.pattern.matcher(jj);
+        Matcher matcher = pattern.matcher(jj);
         if (!matcher.find()) {
             return "";
         }

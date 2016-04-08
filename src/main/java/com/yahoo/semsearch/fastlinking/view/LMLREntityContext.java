@@ -30,8 +30,8 @@ public class LMLREntityContext extends LREntityContext {
     private static final int muLM = 1000;
     private static final double DEFAULT_SCORE = -50;
 
-    public LMLREntityContext( String unigramF, String entityF, AbstractEntityHash hash, String modelFile, String typeMappingFile ) throws ClassNotFoundException, IOException {
-        super( unigramF, entityF, hash );
+    public LMLREntityContext( String wordsFile, String entityF, AbstractEntityHash hash, String modelFile, String typeMappingFile ) throws ClassNotFoundException, IOException {
+        super( wordsFile, entityF, hash );
         typeMapping = EntityContextFastEntityLinker.readTypeMapping( typeMappingFile );
         models = ( TypeLanguageModel ) BinIO.loadObject( modelFile );
         reset();

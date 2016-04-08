@@ -559,7 +559,6 @@ public class ExtractWikipediaAnchorText extends Configured implements Tool {
 	 *
 	 * @param inputPath
 	 * @param outputPath
-	 * @param redirPath
 	 * @throws IOException
 	 */
 	private void task1(String inputPath, String outputPath) throws IOException {

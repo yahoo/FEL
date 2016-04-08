@@ -14,7 +14,7 @@ import com.yahoo.semsearch.fastlinking.view.Span;
  * Factory for normalizing strings of text.
  * It implements several methods and wraps one of them in the {@link #normalize(String args[]) normalize method.
  *
- * @author roi
+ * @author roi blanco
  */
 public class Normalize {
     private static final Pattern SPACE = Pattern.compile( "[\\p{Space}\\p{Cntrl}]+" );
@@ -41,7 +41,7 @@ public class Normalize {
      * @return processed span array with (normalized) string chunks
      */
     public static Span[] normalizeWithSpans( String args ) {
-        final StringBuffer t = new StringBuffer();
+        final StringBuilder t = new StringBuilder();
         final int length = args.length();
         List<Span> res = new ArrayList<Span>();
         int pi = -1;
@@ -70,12 +70,11 @@ public class Normalize {
      * @return processed string
      */
     public static String normalizeFast( String args ) {
-        final StringBuffer t = new StringBuffer();
+        final StringBuilder t = new StringBuilder();
         final int length = args.length();
         boolean inSpace = false;
         for( int i = 0; i < length; i++ ) {
             char charAt = args.charAt( i );
-            //if ( Character.isLetterOrDigit( charAt ) || charAt == '.' ) {
             if( Character.isLetterOrDigit( charAt ) ) {
                 if( inSpace ) t.append( ' ' );
                 t.append( Character.toLowerCase( charAt ) );
@@ -132,8 +131,7 @@ public class Normalize {
             normalizedId = normalizedId.replaceAll( sw, " " );
             q = q.replaceAll( sw, " " );
         }
-        String intentPart = StringUtils.remove( q, normalizedId );
-        return intentPart;
+        return StringUtils.remove( q, normalizedId );
     }
 
     public static void main( String args[] ) {

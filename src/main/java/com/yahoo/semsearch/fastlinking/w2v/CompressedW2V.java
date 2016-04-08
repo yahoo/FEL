@@ -32,10 +32,18 @@ public class CompressedW2V implements WordVectors, Serializable {
         this.N = vec.getInt( 1 ).length;
     }
 
+    /**
+     * Returns the vector for the word with the given id
+     * @param word id of the word
+     * @return word vector or null if not found
+     */
     public float[] get( long word ) {
         return vec.get( word );
     }
 
+    /**
+     * @return number of dimensions of the vectors
+     */
     public int getSize() {
         return vec.size();
     }
@@ -45,6 +53,11 @@ public class CompressedW2V implements WordVectors, Serializable {
         return vec.get( word );
     }
 
+    /**
+     * Gets the id of a word string
+     * @param word input word
+     * @return long id of word or null if it doesn't exist in the vocabulary
+     */
     public Long getWordId( String word ) {
         return vec.word_id( word );
     }
@@ -55,10 +68,16 @@ public class CompressedW2V implements WordVectors, Serializable {
     }
 
 
+    /**
+     * Command line tool to compute word and entity similarities
+     * @param args arguments [entityVectors] [wordVectors]
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     public static void main( String args[] ) throws IOException, ClassNotFoundException {
         //CentroidEntityScorer scorer = new CentroidEntityScorer( (Word2VecCompress) BinIO.loadObject( args[0] ), (Word2VecCompress) BinIO.loadObject( args[1] ) );
         Word2VecCompress wv = ( Word2VecCompress ) BinIO.loadObject( args[ 1 ] );
-        LREntityScorer scorer = new LREntityScorer( ( Word2VecCompress ) BinIO.loadObject( args[ 0 ] ), wv );
+        LREntityScorer scorer = new LREntityScorer(  wv, ( Word2VecCompress ) BinIO.loadObject( args[ 0 ] ));
 
 
         final BufferedReader br = new BufferedReader( new InputStreamReader( System.in ) );
@@ -78,8 +97,8 @@ public class CompressedW2V implements WordVectors, Serializable {
             float sim = scorer.score( strings[ 1 ], w );
             float[] entity = wv.get( strings[ 1 ] );
             if( entity != null ) {
-                for( int i = 0; i < w.size(); i++ ) {
-                    float[] v = vectors.getVectorOf( w.get( i ) );
+                for( String aW : w ) {
+                    float[] v = vectors.getVectorOf( aW );
                     if( v != null ) {
                         double score = eb.scoreLR( entity, v );
                         System.out.println( "score LR " + score );

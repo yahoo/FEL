@@ -17,6 +17,7 @@ import com.yahoo.semsearch.fastlinking.view.EmptyContext;
 public class MeasureSpeed {
     /**
      * Use with [hash] [queries]
+     *
      * @param args input files
      * @throws Exception
      */
@@ -44,5 +45,4 @@ public class MeasureSpeed {
         lines.close();
         System.out.println( " #q = " + numberOfQueries + " " + ( ( double ) acumTime / numberOfQueries ) + " ms/q, time=" + acumTime );
     }
-
 }

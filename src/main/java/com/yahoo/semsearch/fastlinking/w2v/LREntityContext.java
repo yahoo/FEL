@@ -2,7 +2,6 @@ package com.yahoo.semsearch.fastlinking.w2v;
 
 import com.yahoo.semsearch.fastlinking.hash.AbstractEntityHash;
 import com.yahoo.semsearch.fastlinking.hash.QuasiSuccinctEntityHash;
-import it.cnr.isti.hpc.LREntityScorer;
 import it.cnr.isti.hpc.Word2VecCompress;
 import it.unimi.dsi.fastutil.io.BinIO;
 
@@ -13,14 +12,13 @@ import java.io.IOException;
  * - sigmoid-smoothed centroid of the context words
  * - sigmoid-smoothed centroid of the entity words
  *
- * @author roi
+ * @author roi blanco
  */
 public class LREntityContext extends CentroidEntityContext {
 
-    public LREntityContext( String unigramF, String entityF, AbstractEntityHash hash ) throws ClassNotFoundException, IOException {
-        Word2VecCompress vec = ( Word2VecCompress ) BinIO.loadObject( entityF );
-        //scorer = new LREntityScorer( ( Word2VecCompress ) BinIO.loadObject( unigramF ), vec );
-        scorer = new CustomLREntityScorer( ( Word2VecCompress ) BinIO.loadObject( unigramF ), vec );
+    public LREntityContext( String wordsFile, String entityFile, AbstractEntityHash hash ) throws ClassNotFoundException, IOException {
+        Word2VecCompress vec = ( Word2VecCompress ) BinIO.loadObject( entityFile );
+        scorer = new CustomLREntityScorer( ( Word2VecCompress ) BinIO.loadObject( wordsFile ), vec );
         this.hash = ( QuasiSuccinctEntityHash ) hash;
         init( vec );
     }

@@ -25,15 +25,21 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * The original Word2VecCompress creation algorithm doesn't scale for many million entries
- * Created by roi on 12/10/15.
+ * Compressed word2vec-like format word vectors (previously quantized with @see com.yahoo.semsearch.fastlinking.w2v.Quantizer  This class performs several passes through the input data, because the original
+ * Word2VecCompress implementation doesn't scale for many million entries.
+ * Word strings are hashed and quantized vectors are golomb coded
+ *
+ * @author roi blanco
  */
 public class EfficientWord2VecCompress extends Word2VecCompress {
     private static final Logger logger = LoggerFactory.getLogger( EfficientWord2VecCompress.class );
 
     public static void main( String[] args ) throws Exception {
-        SimpleJSAP jsap = new SimpleJSAP( Word2VecCompress.class.getName(), "Creates a compressed representation of quantized word2vec vectors", new Parameter[]{ new UnflaggedOption( "input", JSAP.STRING_PARSER, true,
-                "Input file" ), new UnflaggedOption( "output", JSAP.STRING_PARSER, false, "Compressed version" ), new Switch( "check", JSAP.NO_SHORTFLAG, "check", "Check correctness of output" ) } );
+        SimpleJSAP jsap = new SimpleJSAP( Word2VecCompress.class.getName(), "Creates a compressed representation of quantized word2vec vectors", new Parameter[]{
+                new UnflaggedOption( "input", JSAP.STRING_PARSER, true, "Input file" ),
+                new UnflaggedOption( "output", JSAP.STRING_PARSER, false, "Compressed version" ),
+                new Switch( "check", JSAP.NO_SHORTFLAG, "check", "Check correctness of output" ) }
+        );
         JSAPResult jsapResult = jsap.parse( args );
         if( jsap.messagePrinted() ) return;
 
@@ -72,7 +78,6 @@ public class EfficientWord2VecCompress extends Word2VecCompress {
                     stringSet.add( s );
                 } else {
                     System.out.println( "dup <" + s + "> line " + i );
-                    //horrible hack for duplicates
                     indexToWord.add( s + r.nextDouble() );
                 }
             }
@@ -85,21 +90,20 @@ public class EfficientWord2VecCompress extends Word2VecCompress {
             for( int i = 0; i < numWords; ++i ) {
                 pl.lightUpdate();
                 String line = lines.readLine();
-                try{
-                String[] lineEntries = line.split( " " );
-                for( int col = 0; col < vectorSize; ++col ) {
-                    int entry = Integer.parseInt( lineEntries[ col ] );
-                    // entries[ i * vectorSize + col ] = entry;
-                    // IntBigArrays.add( entries, i * vectorSize + col, entry );
-                    columnAbsSum[ col ] += Fast.int2nat( entry ) + 1;
-                }
-                }catch( Exception e ){
-                    System.err.println( "[ERROR] at line " + i + " : " + line + " word " + indexToWord.get( i ));
+                try {
+                    String[] lineEntries = line.split( " " );
+                    for( int col = 0; col < vectorSize; ++col ) {
+                        int entry = Integer.parseInt( lineEntries[ col ] );
+                        columnAbsSum[ col ] += Fast.int2nat( entry ) + 1;
+                    }
+                } catch( Exception e ) {
+                    System.err.println( "[ERROR] at line " + i + " : " + line + " word " + indexToWord.get( i ) );
                     e.printStackTrace();
-                    System.exit(-1);
+                    System.exit( -1 );
                 }
 
-            }            pl.done();
+            }
+            pl.done();
 
         }
 
@@ -121,7 +125,7 @@ public class EfficientWord2VecCompress extends Word2VecCompress {
         for( int i = 0; i < numWords; ++i ) {
             int newPos = dictionaryHash.get( indexToWord.get( i ) ).intValue();
             permutation[ newPos ] = i;
-         }
+        }
 
         FastByteArrayOutputStream oa = new FastByteArrayOutputStream();
         OutputBitStream obs = new OutputBitStream( oa, 0 );
@@ -171,7 +175,7 @@ public class EfficientWord2VecCompress extends Word2VecCompress {
         for( int i = 0; i < numWords; i++ ) { //re-code
             pl.lightUpdate();
             nendpoints.add( nobs.writtenBits() );
-            long endpoint = endpoints.get( permutation[ i] );
+            long endpoint = endpoints.get( permutation[ i ] );
             ibs.position( endpoint );
             for( int col = 0; col < vectorSize; ++col ) {
                 int val = Fast.nat2int( ibs.readGolomb( golombModuli[ col ] ) );

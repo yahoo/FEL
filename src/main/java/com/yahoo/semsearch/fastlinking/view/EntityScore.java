@@ -3,7 +3,7 @@ package com.yahoo.semsearch.fastlinking.view;
 import java.util.HashMap;
 
 /**
- * Class for holding a score for a given entity. It also contains a HashMap for holding feature values. 
+ * Class for holding a score of a given entity. It also contains a HashMap for holding feature values.
  * @author roi blanco
  *
  */

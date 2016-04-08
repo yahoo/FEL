@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 /**
  * Entity context that always returns zero as the contex score 
- * @author roi
+ * @author roi blanco
  *
  */
 public class EmptyContext extends EntityContext {

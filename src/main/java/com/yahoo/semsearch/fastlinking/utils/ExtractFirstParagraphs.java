@@ -52,6 +52,7 @@ public class ExtractFirstParagraphs implements IArticleFilter {
     }
 
     @SuppressWarnings( "deprecation" )
+    @Override
     public void process( WikiArticle article, Siteinfo siteinfo ) throws SAXException {
         this.title.length( 0 );
         this.firstPar.length( 0 );

@@ -28,7 +28,7 @@ import com.yahoo.semsearch.fastlinking.view.StringAndCandidate;
  * Reads the input datapack. This datapack is computed using a hadoop pipeline
  * offline (see the io package). The datapack has one alias per line.
  *
- * @author roi
+ * @author roi blanco
  */
 
 public class FormatReader {

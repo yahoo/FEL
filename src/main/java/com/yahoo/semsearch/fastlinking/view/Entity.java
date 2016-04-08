@@ -14,8 +14,7 @@ public class Entity implements Serializable {
     private static final long serialVersionUID = 1L;
     public int id;
 
-    public Entity() {
-    };
+    public Entity() {}
 
     public Entity( int id ) {
 	this.id = id;
@@ -39,6 +38,7 @@ public class Entity implements Serializable {
 	return ( (Entity) aThat ).id == id;
     }
 
+    @Override
     public String toString() {
 	return "id: " + id + " QEF: " + QEF + " QAEF: " + QAEF + " MET: " + MET + " MAET: " + MAET + " LET: " + LET + " LAET: " + LAET;
     }

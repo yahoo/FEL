@@ -23,15 +23,21 @@ import com.yahoo.semsearch.fastlinking.view.ClusterEntry;
  * Utility class for using deep learned word vectors. Provides different algebraic manipulations of the word vectors, and utilities to run
  * K-means clustering, centroid calculation and vector to vector similarity calculations.
  *
- * @author roi
+ * @author roi blanco
  */
 public class WordVectorsUtils {
 
-
+    /**
+     * Cluster a file with words
+     * @param args command line arguments; see --help
+     * @throws Exception
+     */
     public static void main( String[] args ) throws Exception {
-        SimpleJSAP jsap = new SimpleJSAP( WordVectorsUtils.class.getName(), "Provides an interface for reading word vectors from a serialized word vector file", new Parameter[]{ new FlaggedOption( "input", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'i', "input", "Input words to cluster" ), new FlaggedOption( "unigrams", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'u', "unigrams", "Unigrams " +
-				"vectors file" ), new FlaggedOption( "cluster", JSAP.INTEGER_PARSER, "100", JSAP.NOT_REQUIRED, 'k', "cluster", "Number of clusters" ), new FlaggedOption( "original", JSAP.STRING_PARSER, JSAP.NO_DEFAULT,
-				JSAP.NOT_REQUIRED, 'o', "Words in the original centroids", "File with the words corresponding to the original clusters" ),
+        SimpleJSAP jsap = new SimpleJSAP( WordVectorsUtils.class.getName(), "Provides an interface for reading word vectors from a serialized word vector file", new Parameter[]{
+                new FlaggedOption( "input", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'i', "input", "Input words to cluster" ),
+                new FlaggedOption( "words", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'v', "words", "Words vectors file" ),
+                new FlaggedOption( "cluster", JSAP.INTEGER_PARSER, "100", JSAP.NOT_REQUIRED, 'k', "cluster", "Number of clusters" ),
+                new FlaggedOption( "original", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'o', "Words in the original centroids", "File with the words corresponding to the original clusters" ),
                 //new FlaggedOption( "output", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'o', "output", "ouptut to serialize the data" ),
         } );
         JSAPResult jsapResult = jsap.parse( args );
@@ -47,7 +53,7 @@ public class WordVectorsUtils {
             UncompressedWordVectors map = UncompressedWordVectors.read( jsapResult.getString( "input" ) );
             clusters = reader.assignClosest( map, reader.readWordsFromFile( jsapResult.getString( "original" ) ) );
         } else {
-            CompressedW2V unigrams = new CompressedW2V( jsapResult.getString( "unigrams" ) );
+            CompressedW2V unigrams = new CompressedW2V( jsapResult.getString( "words" ) );
             UncompressedWordVectors map = new UncompressedWordVectors();
             map.N = unigrams.getVectorLength();
             Object2ObjectOpenHashMap<String, float[]> vectors = new Object2ObjectOpenHashMap<String, float[]>();
@@ -56,8 +62,6 @@ public class WordVectorsUtils {
                 float[] vv = unigrams.getVectorOf( w );
                 if( vv != null ) {
                     vectors.put( w, vv );
-                } else {
-                    //	    System.out.println( "word not found " + w );
                 }
             }
             clusters = reader.cluster( jsapResult.getInt( "cluster" ), map );
@@ -66,9 +70,9 @@ public class WordVectorsUtils {
     }
 
     /**
-     * Outputs on stdout the different clusters.
+     * Outputs on stdout the different clusters computed
      *
-     * @param cluster
+     * @param cluster word clusters
      */
     public void printClusters( Object2ObjectOpenHashMap<String, ClusterEntry> cluster ) {
         int k = -1;
@@ -90,11 +94,12 @@ public class WordVectorsUtils {
     /**
      * Returns the centroids for an already computed clustering assignment
      *
-     * @param map
-     * @return
+     * @param map uncompressed word vectors
+     * @param clusters original assigment
+     * @return new centroids
      */
     public HashMap<Integer, float[]> calculateCentroids( UncompressedWordVectors map, Object2ObjectOpenHashMap<String, ClusterEntry> clusters ) {
-        HashMap<Integer, float[]> centroids = new HashMap<Integer, float[]>(); //a bit space wasteful but convenient in this case
+        HashMap<Integer, float[]> centroids = new HashMap<>(); //a bit space wasteful but convenient in this case
         Int2IntOpenHashMap wordsPerCluster = new Int2IntOpenHashMap();
         for( String word : clusters.keySet() ) {
             float[] vectorOf = map.getVectorOf( word );
@@ -122,9 +127,9 @@ public class WordVectorsUtils {
     /**
      * Performs clustering of a set of vectors when a list of original words is provided for each centroid.
      *
-     * @param originalCentroidsFile
-     * @param map
-     * @return
+     * @param originalCentroidsFile file containing the original words
+     * @param map uncompressed vectors
+     * @return cluster assignment
      * @throws IOException
      */
     public Object2ObjectOpenHashMap<String, ClusterEntry> clusterWithOriginalCentroids( String originalCentroidsFile, UncompressedWordVectors map ) throws IOException {
@@ -138,8 +143,8 @@ public class WordVectorsUtils {
     /**
      * Creates a String[] out of the keys of an @see UncompressedWordVectors
      *
-     * @param map
-     * @return
+     * @param map uncompressed word vectors
+     * @return string array with the word keys
      */
     public String[] createStringArray( UncompressedWordVectors map ) {
         String[] mapS = new String[ map.getVectorLength() ];
@@ -153,8 +158,8 @@ public class WordVectorsUtils {
     /**
      * Creates a (reversed) hash assignment from a String array, where the assignment is the index each string has in the original array
      *
-     * @param x
-     * @return
+     * @param x original string array
+     * @return reversed hash assigment
      */
     private Object2IntOpenHashMap<String> createWordMap( String[] x ) {
         Object2IntOpenHashMap<String> map = new Object2IntOpenHashMap<String>();
@@ -167,8 +172,8 @@ public class WordVectorsUtils {
     /**
      * Parses an input file and returns the phrases found in each line in an ArrayList<String>
      *
-     * @param input
-     * @return
+     * @param input input file with words/phrases
+     * @return words in the fiel
      * @throws IOException
      */
     public ArrayList<String> readWordsFromFile( String input ) throws IOException {
@@ -197,7 +202,12 @@ public class WordVectorsUtils {
         return original;
     }
 
-    //you need a number of elements >= k
+    /**
+     * k-means of the words in the vector file
+     * @param k number of clusters
+     * @param map vector
+     * @return clustering of the words in the vector
+     */
     public Object2ObjectOpenHashMap<String, ClusterEntry> cluster( final int k, final UncompressedWordVectors map ) {
         final int len = map.vectors.keySet().size();
         int[] original = new int[ len ];
@@ -217,6 +227,12 @@ public class WordVectorsUtils {
         return cluster( k, map, original, words );
     }
 
+    /**
+     * Returns the closest word in the vector file
+     * @param map vectors
+     * @param words input words
+     * @return a list of closest words to the input ones
+     */
     public Object2ObjectOpenHashMap<String, ClusterEntry> assignClosest( final UncompressedWordVectors map, ArrayList<String> words ) {
         final int d = map.getVectorLength();
         Object2ObjectOpenHashMap<String, ClusterEntry> assignment = new Object2ObjectOpenHashMap<String, ClusterEntry>();
@@ -238,7 +254,6 @@ public class WordVectorsUtils {
         return assignment;
     }
 
-    //TODO add constrained clustering (never move some of the words from the original assignment)
     public Object2ObjectOpenHashMap<String, ClusterEntry> cluster( final int k, final UncompressedWordVectors map, int[] originalAssigment, String[] words ) {
         final int N = words.length;
         int z = 0;
@@ -304,11 +319,18 @@ public class WordVectorsUtils {
         return centroids;
     }
 
-    public static float[] centroid( Collection<String> words, int N, WordVectors unigrams ) {
+    /**
+     * Computes the centroid of a list of words
+     * @param words list of words
+     * @param N number of dimensions
+     * @param vectors word vectors
+     * @return centroid of the words
+     */
+    public static float[] centroid( Collection<String> words, int N, WordVectors vectors ) {
         float[] acum = new float[ N ];
         int wordsWithFeatures = 0;
         for( String w : words ) {
-            float[] v = unigrams.getVectorOf( w );
+            float[] v = vectors.getVectorOf( w );
             if( v != null ) {
                 wordsWithFeatures++;
                 for( int i = 0; i < N; i++ )
@@ -322,6 +344,13 @@ public class WordVectorsUtils {
         return acum;
     }
 
+    /**
+     * dot product
+     * @param v one vector
+     * @param w  another vector
+     * @param N dimensions
+     * @return w * v
+     */
     public static float sim( float[] v, float[] w, int N ) { //L2 norm	
         float score = 0;
         float la = 0;
@@ -333,26 +362,24 @@ public class WordVectorsUtils {
         }
         if( la == 0 || lb == 0 ) return 0; //avoiding NaN
         return ( float ) ( score / ( Math.sqrt( la ) * Math.sqrt( lb ) ) );
-
-        //return LinearAlgebra.inner( N, v, 0, w, 0 );
-
     }
 
-    public static float squash( float[] sim, float norm ) {
-        float sum = 0;
-        for( float f : sim )
-            sum += f;
-        return ( sum / ( sum + norm ) );
-    }
-
-    public static float[] queryCentroid( String query, int N, WordVectors unigrams ) {
+    /**
+     * Computes the centroid of the unigrams in a query
+     * @param query original query
+     * @param N dimension
+     * @param vectors word vectors
+     * @return centroid vector
+     */
+    public static float[] queryCentroid( String query, int N, WordVectors vectors ) {
         ArrayList<String> words = new ArrayList<String>();
         String[] chunks = chunk( query );
-        for( String s : chunks )
+        for( String s : chunks ) {
             words.add( s );
-        //query centroid first
-        return WordVectorsUtils.centroid( words, N, unigrams );
+        }
+        return WordVectorsUtils.centroid( words, N, vectors );
     }
+
 
     private static String[] chunk( String query ) {
         return query.split( "\\s" );

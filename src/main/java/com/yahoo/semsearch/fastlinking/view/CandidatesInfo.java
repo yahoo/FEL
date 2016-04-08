@@ -14,19 +14,14 @@ public class CandidatesInfo implements Serializable {
     private static final long serialVersionUID = 1L;
     public final Entity[] entities;
     public EntityScore maxScore = null;
-
-
     public double QAF; //The query frequency. The number of time the query got issued on US web search and led to at least one Wikipedia document.
     public double QAT; //The query total frequency. The number of time this query got issued on US web search.
     //   public double MAF; //The matching alias (within the query) frequency. The number of time the matching alias occurred in queries issued on the US web traffic and led to at least one Wikipedia document. (WAC)
     //  public double MAT; //The matching alias (within the query) total frequency. The number of time the matching alias occurred in queries issued on US web search.
     public double LAF; //The anchor text link frequency. The number of time the alias occurred in the Wikipedia corpus as a link / anchor text pointing to another Wikipedia document. (WANC)
     public double LAT; //The anchor text total frequency. The number of time the alias occurred in the Wikipedia corpus. (WC)
-
     public double totalPriorProbOfClick = 0;
-
     public double totalPriorProbOfLink = 0; //these three are new and used for smoothing
-
     public double QAC;
 
     public CandidatesInfo( Entity[] entities, int QAF, int QAT, int QAC, int LAF, int LAT ) {
@@ -44,6 +39,7 @@ public class CandidatesInfo implements Serializable {
         }
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append( "QAF:" );

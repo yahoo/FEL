@@ -38,7 +38,7 @@ import com.yahoo.semsearch.fastlinking.view.EntitySpan;
  * @author roi blanco
  */
 public class RunFELOntheGrid extends Configured implements Tool {
-    final static double threshold = -6;
+    final private static double threshold = -6;
     static final String[] ID_SW = new String[]{ "the", "of", "a", "at", "in" };
 
     static enum MyCounters {

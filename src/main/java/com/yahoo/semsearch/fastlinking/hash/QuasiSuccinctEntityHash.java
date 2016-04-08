@@ -152,7 +152,6 @@ public class QuasiSuccinctEntityHash extends AbstractEntityHash implements Seria
         final BufferedReader lines = new BufferedReader( new FileReader( jsapResult.getString( "entity2id" ) ) );
 
         // A list containing entity names at id positions
-
         ObjectArrayList<String> entityNames = new ObjectArrayList<>( maxIndex );
         LOGGER.info( "Storing entity names" );
         while( ( line = lines.readLine() ) != null ) {

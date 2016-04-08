@@ -5,7 +5,8 @@ import it.cnr.isti.hpc.LinearAlgebra;
 import it.cnr.isti.hpc.Word2VecCompress;
 
 /**
- *
+ * Wrapper for LREntityScorer - use this class with the entity embeddings learned from @see com.yahoo.semsearch.fastlinking.w2v.EntityEmbeddings
+ * It computes a query (text) normalizer for score comparison
  * @author roi blanco
  */
 public class CustomLREntityScorer extends EntityScorer {

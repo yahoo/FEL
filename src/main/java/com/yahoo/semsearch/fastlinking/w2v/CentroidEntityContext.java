@@ -31,8 +31,6 @@ public class CentroidEntityContext extends EntityContext {
 
     public CentroidEntityContext() {}
 
-    ;
-
     public CentroidEntityContext( String vector, String entities, AbstractEntityHash hash ) throws ClassNotFoundException, IOException {
         Word2VecCompress vec = ( Word2VecCompress ) BinIO.loadObject( entities );
         scorer = new CentroidEntityScorer( ( Word2VecCompress ) BinIO.loadObject( vector ), vec );
@@ -51,7 +49,7 @@ public class CentroidEntityContext extends EntityContext {
             String name = hash.getEntityName( i ).toString();
             Long x = vec.word_id( name );
             if( x != null ) {
-                idMapping.add( ( long ) x.longValue() );
+                idMapping.add( ( long ) x );
             } else {
                 idMapping.add( 0L );
             }
@@ -83,7 +81,7 @@ public class CentroidEntityContext extends EntityContext {
     }
 
     @Override
-    public void setEntitiesForScoring( Entity[] entities ) { //empty		
+    public void setEntitiesForScoring( Entity[] entities ) {
     }
 
 }
