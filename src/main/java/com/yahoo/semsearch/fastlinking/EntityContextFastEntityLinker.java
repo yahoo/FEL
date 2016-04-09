@@ -42,6 +42,11 @@ public class EntityContextFastEntityLinker extends FastEntityLinker {
         this.ranker = new ContextualRanker( hash );
     }
 
+    public EntityContextFastEntityLinker( QuasiSuccinctEntityHash hash, CountAndRecordStats stats, EntityContext queryContext ) {
+        super( hash, stats, queryContext );
+        this.ranker = new ContextualRanker( hash );
+    }
+
     /**
      * Context-aware command line entity linker
      * @param args arguments (see -help for further info)

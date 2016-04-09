@@ -5,6 +5,7 @@ import com.yahoo.semsearch.fastlinking.entityranker.EntityRelevanceJudgment;
 import com.yahoo.semsearch.fastlinking.entityranker.NPMIRanker;
 import com.yahoo.semsearch.fastlinking.entityranker.ProbabilityRanker;
 import com.yahoo.semsearch.fastlinking.hash.AbstractEntityHash;
+import com.yahoo.semsearch.fastlinking.hash.CountAndRecordStats;
 import com.yahoo.semsearch.fastlinking.hash.QuasiSuccinctEntityHash;
 import com.yahoo.semsearch.fastlinking.utils.Normalize;
 import com.yahoo.semsearch.fastlinking.view.*;
@@ -22,6 +23,8 @@ import java.util.*;
  * @see <a href="http://www.dc.fi.udc.es/~roi/publications/wsdm2015.pdf/">fast entity linking on queries</a>
  */
 public class FastEntityLinker {
+
+    private  CountAndRecordStats stats;
     protected EntityContext context;
     private AbstractEntityHash hash;
     public CandidateRanker ranker;
@@ -34,6 +37,13 @@ public class FastEntityLinker {
     private final Entity[] emptyEntities = new Entity[ 0 ];
 
     public FastEntityLinker( AbstractEntityHash hash, EntityContext context ) {
+        this.hash = hash;
+        this.ranker = new ProbabilityRanker( ( QuasiSuccinctEntityHash ) hash );
+        this.context = context;
+    }
+
+    public FastEntityLinker( AbstractEntityHash hash, CountAndRecordStats stats, EntityContext context ) {
+        this.stats = stats;
         this.hash = hash;
         this.ranker = new ProbabilityRanker( ( QuasiSuccinctEntityHash ) hash );
         this.context = context;

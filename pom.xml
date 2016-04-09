@@ -82,6 +82,16 @@
     </plugins>    
   </build>
       <dependencies>
+		  <dependency>
+			  <groupId>xmlrpc-helma</groupId>
+			  <artifactId>xmlrpc-helma</artifactId>
+			  <version>1.0</version>
+		  </dependency>
+		  <dependency>
+			  <groupId>org.apache.commons</groupId>
+			  <artifactId>commons-math3</artifactId>
+			  <version>3.3</version>
+		  </dependency>
     <dependency>
 			<groupId>it.unimi.dsi</groupId>
 			<artifactId>sux4j</artifactId>
