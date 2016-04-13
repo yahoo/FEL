@@ -80,7 +80,7 @@ public class Datapack extends Configured implements Tool {
 		BufferedWriter anchorsDataOut;
 		BufferedWriter anchorsTSVOut;
 
-		Boolean multiple_output = (multiple_out != null && multiple_out.equalsIgnoreCase("true") ? true : false);
+		Boolean multiple_output = ( multiple_out != null && multiple_out.equalsIgnoreCase( "true" ) );
 
 		if (!multiple_output) {
 			anchorsDataOut = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(out), outputEncoding));

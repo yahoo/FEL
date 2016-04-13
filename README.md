@@ -34,19 +34,19 @@ The library also comes with two different sets of tools for generating the hash 
 * Compressing word vectors (typical compression ratios are around 10x).
 
 If you use this library, please cite the following paper:
-```json
-@inproceedings{Blanco:WSDM2015,
-        Address = {New York, NY, USA},
-        Author = {Blanco, Roi and Ottaviano, Giuseppe and Meij, Edgar},
-        Booktitle = {Proceedings of the Eight ACM International Conference on Web Search and Data Mining},
-        Location = {Shanghai, China},
-        Numpages = {10},
-        Publisher = {ACM},
-        Series = {WSDM '15},
-        Title = {Fast and Space-Efficient Entity Linking in Queries},
-        Year = {2015},
-}
-```
+
+    @inproceedings{Blanco:WSDM2015,
+            Address = {New York, NY, USA},
+            Author = {Blanco, Roi and Ottaviano, Giuseppe and Meij, Edgar},
+            Booktitle = {Proceedings of the Eight ACM International Conference on Web Search and Data Mining},
+            Location = {Shanghai, China},
+            Numpages = {10},
+            Publisher = {ACM},
+            Series = {WSDM '15},
+            Title = {Fast and Space-Efficient Entity Linking in Queries},
+            Year = {2015},
+    }
+
 
 #### Stand-alone query entity linking
 
@@ -71,6 +71,7 @@ rlwrap java -Xmx10G com.yahoo.semsearch.fastlinking.FastEntityLinker data/alias.
 The following command works 
 ```bash
     hadoop jar FEL-0.1.0-fat.jar \
+    com.yahoo.semsearch.fastlinking.utils.RunFELOntheGrid \
     -Dmapred.map.tasks=100 \
     -Dmapreduce.map.java.opts=-Xmx3g \
     -Dmapreduce.map.memory.mb=3072 \
@@ -79,14 +80,14 @@ The following command works
     <inputfile>
     <outputfile>
 ```
-The jar reads files that have one query per line - it splits on <TAB> and takes the first element. 
-At the moment it outputs the following format (which is PIG-friendly) although it could print out anything else if needed to. 
-
-(a beka summer books,{(summer,Summer,1768785,678,-4.572464942932129)(books,Book,1882136,998,-5.444955348968506)(a beka,A_Beka_Book,2889283,926,-2.051509857177734)})    1
-(air cooled gasoline engines,{(gasoline engines,Gas_engine,12299268,0,-2.340573310852051)(air cooled,Air-cooled_engine,2494691,15,-1.2365872859954834)})        1
-
-This is:
- (query, {(span, entity_yk_id, entity_fnel_id(ignore), entity_type, entity_score)} ) (entities are -not- ordered by score).
+The class reads files that have one query per line - it splits on <TAB> and takes the first element.
+The output format is
+    entity type <TAB> query <TAB> modifier <TAB> entity id
+where
+entity type is given in the datapack
+query is the original query
+entity id is the retrieved entity
+modifier is the query string when the entity alias is remove
 
 In general you should rely on thresholding and possibly sticking to the top-1 entity retrieved but this depends on how you are going to use it.
 
@@ -138,8 +139,22 @@ com.yahoo.semsearch.fastlinking.w2v.EfficientWord2VecCompress
 
 
 ## Mine Wikipedia and Extract Graph-Based Counts
+The tool makes use of a datapack that stores counts and aliases (mentions) of entities from different sources. Originally,
+we used anchor text and query logs. The following describes how to mine and compute the anchor text from a public Wikipedia dump using a hadoop cluster (or if
+there is not one, you can use hadoop in a single machine).
 
-The minimum steps required to mine and compute the entity dependent features, the alias-entity dependent counts and the entity redirects are described below. 
+The main classes involved are WikipediaDocnoMappingBuilder, RepackWikipedia, ExtractWikipediaAnchorText and Datapack. The final datapack is
+created using three pig scripts.
+
+    WikipediaDocnoMappingBuilder: filters the Wiki pages from the dump and records the ids of the entity pages
+    RepackWikipedia: rewrites the Wikipedia dump using the entity pages only
+    ExtractWikipediaAnchorText: extracts the in-wiki links from Wikipedia and creates pairs (alias, entity) where the alias is the text in the anchor
+    and the entity is the id of a Wikipedia page pointed out by an outgoing link.
+    Datapack: creates a first version of the datapack (with no aggregate counts).
+
+The pig scripts are used to aggregate counts for aliases and entities, and rewrite the final datapack.
+The detailed commands you need to run to create the datapack come next.
+
 
 Download Latest Wikipedia Dump
 
@@ -208,7 +223,7 @@ com.yahoo.semsearch.io.RepackWikipedia \
 -compression_type block
 ```
 
-Build Data Structures
+Build Data Structures and extract anchor text
 ```bash
 hadoop \
 jar target/FEL-0.1.0.jar\
@@ -227,7 +242,7 @@ com.yahoo.semsearch.io.ExtractWikipediaAnchorText \
 -redir wiki/${WIKI_MARKET}/${WIKI_DATE}/redirects 
 ```
 
-Compute Alias-Entity Dependent Counts
+Compute anchor text counts
 
 ```bash
 hadoop \
@@ -265,10 +280,6 @@ awk '{print $0"\t"NR}' | \
 hadoop dfs -put - wiki/${WIKI_MARKET}/${WIKI_DATE}/id-entity.tsv
 ```
 
-###Compute Graph-Based Entity Dependent Features & Alias-Entity Dependent Features
-
-The minimum steps required to compute the alias-entity dependent features are described below.
-
 Aggregate Alias-Entity Dependent Counts
 ```bash
 # set FEL_DATE to the FEL datapack generation date, e.g.
@@ -292,7 +303,7 @@ pig \
 -param output=fel/${FEL_DATE}/feat/graph/${WIKI_MARKET}/${WIKI_DATE}/alias-entity/agg \
 -file ./src/main/pig/aggregate-graph-alias-entity-counts.pig
 ```
-##Compute Alias-Entity Dependent Features
+
 
 ```bash
 pig \
@@ -307,9 +318,11 @@ pig \
 -file ./src/main/pig/compute-graph-alias-entity-counts.pig
 ```
 
-##Generate Features Vectors
+Generate Features Vectors
 
-Merge Search-Based Counts and Graph-Based Counts
+This script would merge Search-Based Counts and Graph-Based Counts (or different counts) - currently the search based
+counts are set to zero.
+
 ```bash
 # set FEL_DATE to the FEL datapack generation date, e.g.
 FEL_DATE=20151108
@@ -339,6 +352,7 @@ pig \
 ```
 
 Copy Datapack to Local Directory
+
 ```bash
 OUTPUT_DIR=\
 ${WORKING_DIR}/fel/datapack/${FEL_DATE}/\
