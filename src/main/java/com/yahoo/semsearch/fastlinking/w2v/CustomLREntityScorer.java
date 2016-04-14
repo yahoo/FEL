@@ -5,9 +5,10 @@
 
 package com.yahoo.semsearch.fastlinking.w2v;
 
-import it.cnr.isti.hpc.EntityScorer;
-import it.cnr.isti.hpc.LinearAlgebra;
-import it.cnr.isti.hpc.Word2VecCompress;
+
+import com.yahoo.semsearch.fastlinking.w2v.compress.EntityScorer;
+import com.yahoo.semsearch.fastlinking.w2v.compress.LinearAlgebra;
+import com.yahoo.semsearch.fastlinking.w2v.compress.Word2VecCompress;
 
 /**
  * Wrapper for LREntityScorer - use this class with the entity embeddings learned from @see com.yahoo.semsearch.fastlinking.w2v.EntityEmbeddings
