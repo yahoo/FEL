@@ -35,7 +35,7 @@ import edu.umd.cloud9.collection.XMLInputFormat.XMLRecordReader;
 import edu.umd.cloud9.collection.wikipedia.WikipediaPage;
 
 /**
- * Hadoop {@code InputFormat} for processing Wikipedia pages from the XML dumps.
+ * Hadoop {@code InputFormat} for processing Wikipedia pages from the XML dumps. https://lintool.github.io/Cloud9/
  *
  * @author Jimmy Lin
  * @author Peter Exner

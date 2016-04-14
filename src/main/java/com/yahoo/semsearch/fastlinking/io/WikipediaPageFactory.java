@@ -31,7 +31,7 @@ import edu.umd.cloud9.collection.wikipedia.language.SwedishWikipediaPage;
 import edu.umd.cloud9.collection.wikipedia.language.TurkishWikipediaPage;
 
 /**
- * Hadoop {@code WikipediaPageFactory} for creating language dependent WikipediaPage Objects.
+ * Hadoop {@code WikipediaPageFactory} for creating language dependent WikipediaPage Objects. From https://lintool.github.io/Cloud9/
  *
  * @author Peter Exner
  * @author Ferhan Ture

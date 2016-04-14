@@ -36,6 +36,7 @@ import org.apache.log4j.Logger;
 import edu.umd.cloud9.collection.DocnoMapping;
 
 /**
+ * https://lintool.github.io/Cloud9/
  * <p>
  * Provides a mapping between Wikipedia internal ids (docids) and sequentially-numbered ints
  * (docnos).
