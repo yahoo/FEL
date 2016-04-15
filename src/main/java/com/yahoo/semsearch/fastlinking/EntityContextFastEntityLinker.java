@@ -1,6 +1,6 @@
 /**
- Copyright 2016, Yahoo! Inc.
- Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
+ * Copyright 2016, Yahoo! Inc.
+ * Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
  **/
 
 package com.yahoo.semsearch.fastlinking;
@@ -13,12 +13,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
@@ -58,21 +56,17 @@ public class EntityContextFastEntityLinker extends FastEntityLinker {
      * @throws Exception
      */
     public static void main( String args[] ) throws Exception {
-        SimpleJSAP jsap = new SimpleJSAP( EntityContextFastEntityLinker.class.getName(), "Interactive mode for entity linking",
-                new Parameter[]{
-                        new FlaggedOption( "hash", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'h', "hash", "quasi succint hash" ),
-                        new FlaggedOption( "vectors", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'v', "vectors", "Word vectors file" ),
-                        new FlaggedOption( "labels", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'l', "labels", "File containing query2entity labels" ), new FlaggedOption( "id2type", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'i', "id2type", "File with the id2type mapping" ),
-                        new Switch( "centroid", 'c', "centroid", "Use centroid-based distances and not LR" ),
-                        new FlaggedOption( "map", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'm', "map", "Entity 2 type mapping " ),
-                        new FlaggedOption( "threshold", JSAP.STRING_PARSER, "-20", JSAP.NOT_REQUIRED, 'd', "threshold", "Score threshold value " ),
-                        new FlaggedOption( "entities", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'e', "entities", "Entities word vectors file" ), }
-        );
+        SimpleJSAP jsap = new SimpleJSAP( EntityContextFastEntityLinker.class.getName(), "Interactive mode for entity linking", new Parameter[]{ new FlaggedOption( "hash", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP
+                .REQUIRED, 'h', "hash", "quasi succint hash" ), new FlaggedOption( "vectors", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'v', "vectors", "Word vectors file" ), new FlaggedOption( "labels",
+                JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'l', "labels", "File containing query2entity labels" ), new FlaggedOption( "id2type", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED,
+                'i', "id2type", "File with the id2type mapping" ), new Switch( "centroid", 'c', "centroid", "Use centroid-based distances and not LR" ), new FlaggedOption( "map", JSAP.STRING_PARSER, JSAP.NO_DEFAULT,
+                JSAP.NOT_REQUIRED, 'm', "map", "Entity 2 type mapping " ), new FlaggedOption( "threshold", JSAP.STRING_PARSER, "-20", JSAP.NOT_REQUIRED, 'd', "threshold", "Score threshold value " ), new FlaggedOption(
+                "entities", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'e', "entities", "Entities word vectors file" ), } );
 
         JSAPResult jsapResult = jsap.parse( args );
         if( jsap.messagePrinted() ) return;
 
-        double threshold = Double.parseDouble( jsapResult.getString("threshold") );
+        double threshold = Double.parseDouble( jsapResult.getString( "threshold" ) );
         QuasiSuccinctEntityHash hash = ( QuasiSuccinctEntityHash ) BinIO.loadObject( jsapResult.getString( "hash" ) );
         EntityContext queryContext;
         if( !jsapResult.getBoolean( "centroid" ) ) {
@@ -96,7 +90,7 @@ public class EntityContextFastEntityLinker extends FastEntityLinker {
 
         final BufferedReader br = new BufferedReader( new InputStreamReader( System.in ) );
         String q;
-        for(; ; ) {
+        for( ; ; ) {
             System.out.print( ">" );
             q = br.readLine();
             if( q == null ) {
@@ -116,8 +110,7 @@ public class EntityContextFastEntityLinker extends FastEntityLinker {
                         String name = er.text.toString().trim();
                         String newType = entities2Type.get( name );
                         if( newType == null ) newType = "NF";
-                        	System.out.println( q + "\t span: \u001b[1m [" + er.text + "] \u001b[0m eId: " + er.id + " ( t= " + newType + ")" + "  score: " + er.score + " ( "
-                        		+ er.s.span + " ) " );
+                        System.out.println( q + "\t span: \u001b[1m [" + er.text + "] \u001b[0m eId: " + er.id + " ( t= " + newType + ")" + "  score: " + er.score + " ( " + er.s.span + " ) " );
 
                         //System.out.println( newType + "\t" + q + "\t" + StringUtils.remove( q, er.s.span.toString() ) + " \t " + er.text );
                         break;

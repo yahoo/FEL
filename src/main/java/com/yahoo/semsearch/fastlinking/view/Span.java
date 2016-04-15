@@ -44,9 +44,7 @@ public class Span implements Comparable<Span>, Comparator<Span> {
     }
 
     /**
-     * Returns the span in the input that matched.
-     * 
-     * @return
+     * @return the span in the input that matched.
      */
     public String getSpan() {
 	return span;

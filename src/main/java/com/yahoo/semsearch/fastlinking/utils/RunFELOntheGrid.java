@@ -37,8 +37,8 @@ import com.yahoo.semsearch.fastlinking.view.EntitySpan;
 /**
  * Runs entity linking on hadoop. It requires some files (-files) to be shipped to every node.
  * <p>
- * hadoop jar PIMEL-0.0.1-SNAPSHOT-jar-with-dependencies.jar -Dmapred.map.tasks=100 -Dmapreduce.map.java.opts=-Xmx3g -Dmapreduce.map.memory.mb=3072 -Dmapred.job.queue.name=adhoc \
- * -files /grid/0/tmp/roi/alias.qsi#hash,/grid/0/tmp/roi/wiki.3.200.hs.e0.100.tr.bin.new#words,/grid/0/tmp/roi/entity_vectors.lr.e0.100.bin#entities  /user/saul/query_features_train/part-r-00000 tagOut
+ * hadoop jar FEL-0.1-jar-with-dependencies.jar -Dmapred.map.tasks=100 -Dmapreduce.map.java.opts=-Xmx3g -Dmapreduce.map.memory.mb=3072 -Dmapred.job.queue.name=adhoc \
+ * -files hash.qsi#hash,wordsvector#words,entity_vectors#entities  queriesInHDFS <outputfile>
  *
  * @author roi blanco
  */

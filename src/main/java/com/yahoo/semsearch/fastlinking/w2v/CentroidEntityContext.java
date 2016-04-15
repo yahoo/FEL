@@ -5,9 +5,6 @@
 
 package com.yahoo.semsearch.fastlinking.w2v;
 
-//import it.cnr.isti.hpc.CentroidEntityScorer;
-//import it.cnr.isti.hpc.EntityScorer;
-//import it.cnr.isti.hpc.Word2VecCompress;
 import com.yahoo.semsearch.fastlinking.w2v.compress.CentroidEntityScorer;
 import com.yahoo.semsearch.fastlinking.w2v.compress.EntityScorer;
 import com.yahoo.semsearch.fastlinking.w2v.compress.Word2VecCompress;

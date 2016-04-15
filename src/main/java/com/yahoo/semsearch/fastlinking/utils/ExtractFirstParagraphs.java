@@ -68,12 +68,12 @@ public class ExtractFirstParagraphs implements IArticleFilter {
         for( int start = 0; start < plainText.length(); ++start ) {
             if( Character.isWhitespace( plainText.charAt( start ) ) ) continue;
             if( plainText.charAt( start ) == '{' ) {
-                if( ( start = BRACES_CLOSED.search( ( CharSequence ) plainText, start ) ) == -1 ) break;
+                if( ( start = BRACES_CLOSED.search( plainText, start ) ) == -1 ) break;
                 ++start;
                 continue;
             }
             if( plainText.charAt( start ) == '[' ) {
-                if( ( start = BRACKETS_CLOSED.search( ( CharSequence ) plainText, start ) ) == -1 ) break;
+                if( ( start = BRACKETS_CLOSED.search( plainText, start ) ) == -1 ) break;
                 ++start;
                 continue;
             }

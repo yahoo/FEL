@@ -8,8 +8,6 @@ package com.yahoo.semsearch.fastlinking.entityranker;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import com.yahoo.semsearch.fastlinking.view.CandidatesInfo;
 import com.yahoo.semsearch.fastlinking.view.Entity;

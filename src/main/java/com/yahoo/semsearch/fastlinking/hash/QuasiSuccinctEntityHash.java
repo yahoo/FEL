@@ -46,7 +46,8 @@ import com.yahoo.semsearch.fastlinking.view.Entity;
 import com.yahoo.semsearch.fastlinking.view.StringAndCandidate;
 
 /**
- * Uber class holding compressed aliases and features for entities and their stats
+ * Uber class that contains compressed aliases and features for entities along with their stats.
+ * The class has methods for creating the hash once a datapack is provided; in essence, it will compress and store the contents of the datapack.
  *
  * @author roi blanco
  */
