@@ -8,14 +8,7 @@ occupies <3GB making it suitable to run on the grid (and making the footprint on
 
 ##Install
 
-The project comes with a pom.xml which should install all the dependencies required, except for one that has to be installed manually:
-```bash
-git clone https://github.com/ot/entity2vec; cd entity2vec; mvn install
-```
-Then
-```bash
-mvn clean; mvn package
-```
+The project comes with a pom.xml which should install all the dependencies required.
 
 ## What does this tool do?
 The library performs query and document entity linking. It implements different algorithms that return a confidence score (~log likelihood)
@@ -52,7 +45,7 @@ If you use this library, please cite the following paper:
 
 There are a number of different rankers/linkers that use different conceptual models. The overall description of the algorithm with some implementation details is at:
 
-http://www.dc.fi.udc.es/~roi/publications/wsdm2015.pdf
+[Fast and space efficient entity linking for queries](http://www.dc.fi.udc.es/~roi/publications/wsdm2015.pdf)
 
 The two main classes to use are 
 com.yahoo.semsearch.fastlinking.FastEntityLinker (no context)
@@ -68,7 +61,7 @@ rlwrap java -Xmx10G com.yahoo.semsearch.fastlinking.EntityContextFastEntityLinke
 rlwrap java -Xmx10G com.yahoo.semsearch.fastlinking.FastEntityLinker data/alias.hash
 ```
 #### Grid based linking
-The following command works 
+The following command would run the linker on a hadoop grid:
 ```bash
     hadoop jar FEL-0.1.0-fat.jar \
     com.yahoo.semsearch.fastlinking.utils.RunFELOntheGrid \
@@ -141,16 +134,16 @@ com.yahoo.semsearch.fastlinking.w2v.EfficientWord2VecCompress
 ## Mine Wikipedia and Extract Graph-Based Counts
 The tool makes use of a datapack that stores counts and aliases (mentions) of entities from different sources. Originally,
 we used anchor text and query logs. The following describes how to mine and compute the anchor text from a public Wikipedia dump using a hadoop cluster (or if
-there is not one, you can use hadoop in a single machine).
+there is not one, you can use hadoop in a single machine). This is based on the code from the [Cloud9](https://lintool.github.io/Cloud9/) toolkit.
 
 The main classes involved are WikipediaDocnoMappingBuilder, RepackWikipedia, ExtractWikipediaAnchorText and Datapack. The final datapack is
 created using three pig scripts.
 
-    WikipediaDocnoMappingBuilder: filters the Wiki pages from the dump and records the ids of the entity pages
-    RepackWikipedia: rewrites the Wikipedia dump using the entity pages only
-    ExtractWikipediaAnchorText: extracts the in-wiki links from Wikipedia and creates pairs (alias, entity) where the alias is the text in the anchor
+* WikipediaDocnoMappingBuilder: filters the Wiki pages from the dump and records the ids of the entity pages
+* RepackWikipedia: rewrites the Wikipedia dump using the entity pages only
+* ExtractWikipediaAnchorText: extracts the in-wiki links from Wikipedia and creates pairs (alias, entity) where the alias is the text in the anchor
     and the entity is the id of a Wikipedia page pointed out by an outgoing link.
-    Datapack: creates a first version of the datapack (with no aggregate counts).
+* Datapack: creates a first version of the datapack (with no aggregate counts).
 
 The pig scripts are used to aggregate counts for aliases and entities, and rewrite the final datapack.
 The detailed commands you need to run to create the datapack come next.
