@@ -29,7 +29,7 @@ import java.util.*;
  */
 public class FastEntityLinker {
 
-    private  CountAndRecordStats stats;
+
     protected EntityContext context;
     private AbstractEntityHash hash;
     public CandidateRanker ranker;
@@ -48,7 +48,6 @@ public class FastEntityLinker {
     }
 
     public FastEntityLinker( AbstractEntityHash hash, CountAndRecordStats stats, EntityContext context ) {
-        this.stats = stats;
         this.hash = hash;
         this.ranker = new ProbabilityRanker( ( QuasiSuccinctEntityHash ) hash );
         this.context = context;

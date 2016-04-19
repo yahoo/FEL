@@ -36,10 +36,17 @@ public class CentroidEntityContext extends EntityContext {
 
     public CentroidEntityContext() {}
 
+    public CentroidEntityContext( String vector, AbstractEntityHash hash ) throws ClassNotFoundException, IOException {
+        Word2VecCompress vec = ( Word2VecCompress ) BinIO.loadObject( vector );
+        scorer = new CentroidEntityScorer( vec, vec );
+        this.hash = ( QuasiSuccinctEntityHash ) hash;
+        init( vec );
+    }
+
     public CentroidEntityContext( String vector, String entities, AbstractEntityHash hash ) throws ClassNotFoundException, IOException {
         Word2VecCompress vec = ( Word2VecCompress ) BinIO.loadObject( entities );
         scorer = new CentroidEntityScorer( ( Word2VecCompress ) BinIO.loadObject( vector ), vec );
-        this.hash = ( QuasiSuccinctEntityHash ) hash; //TODO --- this is here for debugging purposes only
+        this.hash = ( QuasiSuccinctEntityHash ) hash;
         init( vec );
     }
 

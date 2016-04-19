@@ -52,7 +52,6 @@ public class CentroidEntityScorer extends EntityScorer {
             int word_size = centroid_vec.length;
             return LinearAlgebra.inner( word_size, entity_vec, 0, centroid_vec, 0 ) / norm;
         }
-
     }
 
     @Override

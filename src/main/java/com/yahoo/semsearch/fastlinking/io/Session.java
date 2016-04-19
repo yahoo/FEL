@@ -5,14 +5,10 @@
 
 package com.yahoo.semsearch.fastlinking.io;
 
-import org.apache.log4j.Logger;
-
 /**
  * Query session holder
  */
 public class Session {
-
-    public static final Logger logger = Logger.getLogger( Session.class );
 
     private String user;
 

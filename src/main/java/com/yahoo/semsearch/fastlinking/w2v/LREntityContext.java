@@ -21,6 +21,13 @@ import java.io.IOException;
  */
 public class LREntityContext extends CentroidEntityContext {
 
+    public LREntityContext( String embeddingsFile, AbstractEntityHash hash ) throws IOException, ClassNotFoundException {
+        Word2VecCompress v = (Word2VecCompress) BinIO.loadObject( embeddingsFile );
+        scorer = new CustomLREntityScorer( v, v );
+        this.hash = (QuasiSuccinctEntityHash) hash;
+        init( v );
+    }
+
     public LREntityContext( String wordsFile, String entityFile, AbstractEntityHash hash ) throws ClassNotFoundException, IOException {
         Word2VecCompress vec = ( Word2VecCompress ) BinIO.loadObject( entityFile );
         scorer = new CustomLREntityScorer( ( Word2VecCompress ) BinIO.loadObject( wordsFile ), vec );

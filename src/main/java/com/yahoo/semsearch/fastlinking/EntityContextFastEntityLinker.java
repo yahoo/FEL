@@ -35,6 +35,7 @@ import com.yahoo.semsearch.fastlinking.w2v.LREntityContext;
  * Entity linker that can use a context class to score candidates.
  * Example usage:
  * java -Xmx5G com.yahoo.semsearch.fastlinking.EntityContextFastEntityLinker -h hash -e entities -v words -m scratch/type_data/entity2types.txt
+ * entities and word embeddings can be on the same file - will just load them once
  *
  * @author roi blanco
  */
@@ -52,27 +53,41 @@ public class EntityContextFastEntityLinker extends FastEntityLinker {
 
     /**
      * Context-aware command line entity linker
+     *
      * @param args arguments (see -help for further info)
      * @throws Exception
      */
     public static void main( String args[] ) throws Exception {
-        SimpleJSAP jsap = new SimpleJSAP( EntityContextFastEntityLinker.class.getName(), "Interactive mode for entity linking", new Parameter[]{ new FlaggedOption( "hash", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP
-                .REQUIRED, 'h', "hash", "quasi succint hash" ), new FlaggedOption( "vectors", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'v', "vectors", "Word vectors file" ), new FlaggedOption( "labels",
-                JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'l', "labels", "File containing query2entity labels" ), new FlaggedOption( "id2type", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED,
-                'i', "id2type", "File with the id2type mapping" ), new Switch( "centroid", 'c', "centroid", "Use centroid-based distances and not LR" ), new FlaggedOption( "map", JSAP.STRING_PARSER, JSAP.NO_DEFAULT,
-                JSAP.NOT_REQUIRED, 'm', "map", "Entity 2 type mapping " ), new FlaggedOption( "threshold", JSAP.STRING_PARSER, "-20", JSAP.NOT_REQUIRED, 'd', "threshold", "Score threshold value " ), new FlaggedOption(
-                "entities", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'e', "entities", "Entities word vectors file" ), } );
+        SimpleJSAP jsap = new SimpleJSAP( EntityContextFastEntityLinker.class.getName(), "Interactive mode for entity linking", new Parameter[]{
+                new FlaggedOption( "hash", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'h', "hash", "quasi succint hash" ),
+                new FlaggedOption( "vectors", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'v', "vectors", "Word vectors file" ),
+                new FlaggedOption( "labels", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'l', "labels", "File containing query2entity labels" ),
+                new FlaggedOption( "id2type", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'i', "id2type", "File with the id2type mapping" ),
+                new Switch( "centroid", 'c', "centroid", "Use centroid-based distances and not LR" ),
+                new FlaggedOption( "map", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'm', "map", "Entity 2 type mapping " ),
+                new FlaggedOption( "threshold", JSAP.STRING_PARSER, "-20", JSAP.NOT_REQUIRED, 'd', "threshold", "Score threshold value " ),
+                new FlaggedOption( "entities", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'e', "entities", "Entities word vectors file" ), } );
 
         JSAPResult jsapResult = jsap.parse( args );
         if( jsap.messagePrinted() ) return;
 
         double threshold = Double.parseDouble( jsapResult.getString( "threshold" ) );
         QuasiSuccinctEntityHash hash = ( QuasiSuccinctEntityHash ) BinIO.loadObject( jsapResult.getString( "hash" ) );
+        String vectorsName = jsapResult.getString( "vectors" );
+        String entityVectorsName = jsapResult.getString( "entities" );
         EntityContext queryContext;
         if( !jsapResult.getBoolean( "centroid" ) ) {
-            queryContext = new LREntityContext( jsapResult.getString( "vectors" ), jsapResult.getString( "entities" ), hash );
+            if( vectorsName.equals( entityVectorsName )){
+                queryContext = new LREntityContext( vectorsName, hash );
+            }else {
+                queryContext = new LREntityContext( vectorsName, entityVectorsName, hash );
+            }
         } else {
-            queryContext = new CentroidEntityContext( jsapResult.getString( "vectors" ), jsapResult.getString( "entities" ), hash );
+            if( vectorsName.equals( entityVectorsName )) {
+                queryContext = new CentroidEntityContext( vectorsName, hash );
+            }else{
+                queryContext = new CentroidEntityContext( vectorsName, entityVectorsName, hash );
+            }
         }
         HashMap<String, ArrayList<EntityRelevanceJudgment>> labels = null;
         if( jsapResult.getString( "labels" ) != null ) {
