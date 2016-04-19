@@ -60,6 +60,18 @@ rlwrap java -Xmx10G com.yahoo.semsearch.fastlinking.EntityContextFastEntityLinke
 
 rlwrap java -Xmx10G com.yahoo.semsearch.fastlinking.FastEntityLinker data/alias.hash
 ```
+
+#### Coherent Entity Linking for Documents
+
+CoherentEntityLinker class takes entity-mentions and n-best list of entity-links for each entity mention as input. It constructs a lattice from the nbest lists  and runs Forward-Backward algorithm.
+ * J. Binder, K. Murphy and S. Russell. Space-Efficient Inference in Dynamic Probabilistic Networks. Int'l, Joint Conf. on Artificial Intelligence, 1997.
+
+More coherency algorithms  are under experimentation. They will be added in the future version of the code. 
+
+```bash
+ java -Xmx512m -Xmx10g exec:java -Dexec.mainClass=com.yahoo.semsearch.fastlinking.CoherentEntityLinker -Dexec.args="enwiki.wiki2vec.d300.compressed data/alias.hash data/ENTITIES.PHRASE.model data/PHRASE.model"  -Dexec.classpathScope=compile
+```
+
 #### Grid based linking
 The following command would run the linker on a hadoop grid:
 ```bash

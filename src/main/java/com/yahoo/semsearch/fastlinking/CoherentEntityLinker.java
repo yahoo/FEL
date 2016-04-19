@@ -1,5 +1,5 @@
 /**
- Copyright 2016, Yahoo! Inc.
+ Copyright 2016, Yahoo Inc.
  Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
  **/
 
@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.stream.Stream;
 
 /**
  * Created by aasishkp on 12/15/15.
@@ -148,10 +147,6 @@ public class CoherentEntityLinker {
             new String[]{"Abedin", "Hillary Clinton", "Clinton", "Elijah Cummings", "Abedin", "Clinton"};
 
         CoherentEntityLinker coherentEntityLinker = new CoherentEntityLinker(args[0], args[1], args[2], args[3]);
-
-        String[] orgs = new String[] {"Apple", "Google", "Apple Computer"};
-        List<String> orgsList = Arrays.asList(orgs);
-        Stream<List<String>> wikiLinksToLink = orgsList.stream().map(org -> coherentEntityLinker.getWikiLinks(org));
 
 
         int lenSurfaceStrings = surfaceStrings.length;

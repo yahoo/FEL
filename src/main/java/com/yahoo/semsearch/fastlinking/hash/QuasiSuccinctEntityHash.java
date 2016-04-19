@@ -1,5 +1,5 @@
 /**
- Copyright 2016, Yahoo! Inc.
+ Copyright 2016, Yahoo Inc.
  Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
  **/
 
@@ -46,8 +46,7 @@ import com.yahoo.semsearch.fastlinking.view.Entity;
 import com.yahoo.semsearch.fastlinking.view.StringAndCandidate;
 
 /**
- * Uber class that contains compressed aliases and features for entities along with their stats.
- * The class has methods for creating the hash once a datapack is provided; in essence, it will compress and store the contents of the datapack.
+ * Uber class holding compressed aliases and features for entities and their stats
  *
  * @author roi blanco
  */
