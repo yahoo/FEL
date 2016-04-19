@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-package com.yahoo.semsearch.fastlinking.w2v.compress;
+package it.cnr.isti.hpc;
 
 import it.unimi.dsi.bits.Fast;
 import it.unimi.dsi.fastutil.ints.IntIterators;

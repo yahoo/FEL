@@ -7,7 +7,7 @@ package com.yahoo.semsearch.fastlinking.w2v;
 
 import com.yahoo.semsearch.fastlinking.hash.AbstractEntityHash;
 import com.yahoo.semsearch.fastlinking.hash.QuasiSuccinctEntityHash;
-import com.yahoo.semsearch.fastlinking.w2v.compress.Word2VecCompress;
+import it.cnr.isti.hpc.Word2VecCompress;
 import it.unimi.dsi.fastutil.io.BinIO;
 
 import java.io.IOException;

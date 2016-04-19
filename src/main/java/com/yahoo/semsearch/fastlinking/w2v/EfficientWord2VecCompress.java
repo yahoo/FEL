@@ -6,8 +6,8 @@
 package com.yahoo.semsearch.fastlinking.w2v;
 
 import com.martiansoftware.jsap.*;
-import com.yahoo.semsearch.fastlinking.w2v.compress.FastInputBitStream;
-import com.yahoo.semsearch.fastlinking.w2v.compress.Word2VecCompress;
+import it.cnr.isti.hpc.FastInputBitStream;
+import it.cnr.isti.hpc.Word2VecCompress;
 import it.unimi.dsi.big.util.ShiftAddXorSignedStringMap;
 import it.unimi.dsi.bits.Fast;
 import it.unimi.dsi.bits.TransformationStrategies;

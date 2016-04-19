@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-package com.yahoo.semsearch.fastlinking.w2v.compress;
+package it.cnr.isti.hpc;
+
 
 //from https://github.com/ot/entity2vec
 public class CentroidEntityScorer extends EntityScorer {
