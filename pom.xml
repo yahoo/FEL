@@ -143,12 +143,7 @@
 			<artifactId>cloud9</artifactId>
 			<version>1.5.0</version>
 		</dependency>
-          <dependency>
-          <groupId>it.cnr.isti.hpc</groupId>
-          <artifactId>word2vec-compress</artifactId>
-          <version>1.0</version>
-          </dependency>
-		<!--
+          <!--
 		<dependency>
 			<groupId>yahoo.yinst.hadoop_mvn_client</groupId>
 			<artifactId>hadoop-client</artifactId>

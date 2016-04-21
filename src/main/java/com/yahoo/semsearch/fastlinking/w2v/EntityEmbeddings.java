@@ -98,7 +98,7 @@ public class EntityEmbeddings extends Configured implements Tool {
 
         float alpha = 10;
         EntityEmbeddings eb = new EntityEmbeddings();
-        final BufferedReader br2 = new BufferedReader( new InputStreamReader( new FileInputStream( new File( jsapResult.getString( "input" ) ) ) ) );
+        final BufferedReader br2 = new BufferedReader( new InputStreamReader( new FileInputStream( new File( jsapResult.getString( "input" ) ) ) , "UTF-8") );
         pl.start();
         String line;
         while( ( line = br2.readLine() ) != null ) {
@@ -306,8 +306,6 @@ public class EntityEmbeddings extends Configured implements Tool {
                 if( ex.y.length > 0 ) {
                     float[] w = eb.trainLR2( ex.x, d, ex.y, alpha );
                     StringBuffer sb = new StringBuffer();
-                    sb.append( parts[ 0 ] );
-                    sb.append( " " );
                     for( int i = 0; i < d; i++ ) {
                         sb.append( w[ i ] );
                         sb.append( " " );
@@ -357,7 +355,7 @@ public class EntityEmbeddings extends Configured implements Tool {
         // Specify various job-specific parameters
         job.setJobName( "Entity embeddings" );
         job.setNumReduceTasks( 1 );
-        job.setJarByClass( RunFELOntheGrid.class );
+        job.setJarByClass( EntityEmbeddings.class );
 
         job.setOutputKeyClass( Text.class );
         job.setOutputValueClass( Text.class );

@@ -61,10 +61,9 @@ public class ExtractFirstParagraphs implements IArticleFilter {
     public void process( WikiArticle article, Siteinfo siteinfo ) throws SAXException {
         this.title.length( 0 );
         this.firstPar.length( 0 );
-        System.out.println( article.getId() );
         this.title.append( URLEncoder.encode( article.getTitle().replace( ' ', '_' ) ) );
         WikiModel wikiModel = new WikiModel( this.imageBaseURL, this.linkBaseURL );
-        String plainText = wikiModel.render( ( ITextConverter ) new PlainTextConverter(), article.getText() );
+        String plainText = wikiModel.render( new PlainTextConverter(), article.getText() );
         for( int start = 0; start < plainText.length(); ++start ) {
             if( Character.isWhitespace( plainText.charAt( start ) ) ) continue;
             if( plainText.charAt( start ) == '{' ) {
