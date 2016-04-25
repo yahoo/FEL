@@ -1,6 +1,6 @@
 /**
- Copyright 2016, Yahoo Inc.
- Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
+ * Copyright 2016, Yahoo Inc.
+ * Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
  **/
 
 package com.yahoo.semsearch.fastlinking.w2v;
@@ -40,11 +40,8 @@ public class EfficientWord2VecCompress extends Word2VecCompress {
     private static final Logger logger = LoggerFactory.getLogger( EfficientWord2VecCompress.class );
 
     public static void main( String[] args ) throws Exception {
-        SimpleJSAP jsap = new SimpleJSAP( Word2VecCompress.class.getName(), "Creates a compressed representation of quantized word2vec vectors", new Parameter[]{
-                new UnflaggedOption( "input", JSAP.STRING_PARSER, true, "Input file" ),
-                new UnflaggedOption( "output", JSAP.STRING_PARSER, false, "Compressed version" ),
-                new Switch( "check", JSAP.NO_SHORTFLAG, "check", "Check correctness of output" ) }
-        );
+        SimpleJSAP jsap = new SimpleJSAP( Word2VecCompress.class.getName(), "Creates a compressed representation of quantized word2vec vectors", new Parameter[]{ new UnflaggedOption( "input", JSAP.STRING_PARSER, true,
+                "Input file" ), new UnflaggedOption( "output", JSAP.STRING_PARSER, false, "Compressed version" ), new Switch( "check", JSAP.NO_SHORTFLAG, "check", "Check correctness of output" ) } );
         JSAPResult jsapResult = jsap.parse( args );
         if( jsap.messagePrinted() ) return;
 
@@ -75,15 +72,19 @@ public class EfficientWord2VecCompress extends Word2VecCompress {
             for( int i = 0; i < numWords; ++i ) {
                 pl.lightUpdate();
                 String s = lines.readLine();//.trim();//unicode vs ascii
-                if( s.charAt( s.length() - 1 ) == '\n' ) {
-                    s = s.substring( 0, s.length() - 2 );
-                }
-                if( !stringSet.contains( s ) ) {
-                    indexToWord.add( s );
-                    stringSet.add( s );
-                } else {
-                    System.out.println( "dup <" + s + "> line " + i );
-                    indexToWord.add( s + r.nextDouble() );
+                if( s.length() > 0 ) {
+                    if( s.charAt( s.length() - 1 ) == '\n' ) {
+                        s = s.substring( 0, s.length() - 2 );
+                    }
+                    if( !stringSet.contains( s ) ) {
+                        indexToWord.add( s );
+                        stringSet.add( s );
+                    } else {
+                        System.out.println( "dup <" + s + "> line " + i );
+                        indexToWord.add( s + r.nextDouble() );
+                    }
+                }else{
+                    indexToWord.add( "<<<<<<VOID>>>>>" + r.nextDouble() );
                 }
             }
             pl.done();
