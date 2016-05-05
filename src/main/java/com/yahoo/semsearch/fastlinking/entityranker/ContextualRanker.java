@@ -27,7 +27,7 @@ public class ContextualRanker extends ProbabilityRanker {
     /** smoothing parameter **/
     public double mu = 10;
     /** Number of candidates to be scored in the second phase **/
-    public int survivingCandidates = 10000;
+    public int survivingCandidates = 1000;
     protected final float minContext = -30;
     /** context weight **/
     protected final float corr = ( float ) 1;
@@ -127,8 +127,8 @@ public class ContextualRanker extends ProbabilityRanker {
     public double secondPhaseRanking( Entity e, int len, float score, EntityContext context ) {
         float contextScore = ( float ) context.getEntityContextScore( e ); //log-p, score is p
         contextScore = contextScore < minContext ? minContext : contextScore;
-        //float lenPrior = 1F / ( 1F + (float) Math.exp( -1 * ( len - 1 ) ) );
-        double fScore = contextScore * corr + Math.log( score );
+        float lenPrior = 1F / ( 1F + (float) Math.exp( -1 * ( len - 1 ) ) );
+        double fScore = contextScore * corr + Math.log( score ) + lenPrior;
         return fScore;
     }
 

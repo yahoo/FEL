@@ -55,7 +55,7 @@ Preprocess Datapack
 ```bash
 hadoop \
 jar target/FEL-0.1.0.jar \
-com.yahoo.semsearch.io.WikipediaDocnoMappingBuilder \
+com.yahoo.semsearch.fastlinking.io.WikipediaDocnoMappingBuilder \
 -Dmapreduce.map.env="JAVA_HOME=/home/gs/java/jdk64/current" \
 -Dmapreduce.reduce.env="JAVA_HOME=/home/gs/java/jdk64/current" \
 -Dyarn.app.mapreduce.am.env="JAVA_HOME=/home/gs/java/jdk64/current" \
@@ -70,7 +70,7 @@ com.yahoo.semsearch.io.WikipediaDocnoMappingBuilder \
 
 hadoop \
 jar target/FEL-0.1.0.jar \
-com.yahoo.semsearch.io.RepackWikipedia \
+com.yahoo.semsearch.fastlinking.io.RepackWikipedia \
 -Dmapreduce.map.env="JAVA_HOME=/home/gs/java/jdk64/current" \
 -Dmapreduce.reduce.env="JAVA_HOME=/home/gs/java/jdk64/current" \
 -Dyarn.app.mapreduce.am.env="JAVA_HOME=/home/gs/java/jdk64/current" \
@@ -89,7 +89,7 @@ Build Data Structures and extract anchor text
 ```bash
 hadoop \
 jar target/FEL-0.1.0.jar\
-com.yahoo.semsearch.io.ExtractWikipediaAnchorText \
+com.yahoo.semsearch.fastlinking.io.ExtractWikipediaAnchorText \
 -Dmapreduce.map.env="JAVA_HOME=/home/gs/java/jdk64/current" \
 -Dmapreduce.reduce.env="JAVA_HOME=/home/gs/java/jdk64/current" \
 -Dyarn.app.mapreduce.am.env="JAVA_HOME=/home/gs/java/jdk64/current" \
@@ -109,7 +109,7 @@ Compute anchor text counts
 ```bash
 hadoop \
 jar target/FEL-0.1.0.jar \
-com.yahoo.semsearch.io.Datapack \
+com.yahoo.semsearch.fastlinking.io.Datapack \
 -amap wiki/${WIKI_MARKET}/${WIKI_DATE}/anchors.map \
 -cfmap wiki/${WIKI_MARKET}/${WIKI_DATE}/alias-entity-counts.map \
 -multi true \
