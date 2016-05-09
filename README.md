@@ -99,6 +99,7 @@ In general you should rely on thresholding and possibly sticking to the top-1 en
 
 #### Fiddling with word embeddings
 
+[See more at](src/main/java/com/yahoo/semsearch/fastlinking/w2v/README.md)
 
 This package also provides code to quantize word2vec vectors for uni/bigrams and generate vectors for entities. An entity is anything that has both an identifier
 and a sequence of words describing it - a document, sentence could match this definition.
