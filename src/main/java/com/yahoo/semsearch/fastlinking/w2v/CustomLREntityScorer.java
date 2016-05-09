@@ -37,9 +37,9 @@ public class CustomLREntityScorer extends EntityScorer {
             for( int i = 0; i < n_words; ++i ) {
                 int word_count = word_counts[ i ];
                 int word_offset = i * word_size;
-                double dotprod = 0; //entity_vec[word_size]; //TODO the original code added a bias
+                double dotprod = 0; //entity_vec[word_size]; //the original code added a bias
                 dotprod -= LinearAlgebra.inner(word_size, word_vecs,
-                		word_offset, entity_vec, 0); //TODO this was a +
+                		word_offset, entity_vec, 0);
                 s += word_count * Math.log( 1 + Math.exp( dotprod ) );
             }
             return -s;
