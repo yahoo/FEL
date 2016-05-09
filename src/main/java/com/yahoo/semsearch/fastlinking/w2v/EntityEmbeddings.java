@@ -77,7 +77,8 @@ public class EntityEmbeddings extends Configured implements Tool {
         SimpleJSAP jsap = new SimpleJSAP( EntityEmbeddings.class.getName(), "Learns entity embeddings", new Parameter[]{
                 new FlaggedOption( "input", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'i', "input", "Entity description files" ),
                 new FlaggedOption( "vectors", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'v', "vectors", "Word2Vec file" ),
-                new FlaggedOption( "rho", JSAP.INTEGER_PARSER, "-1", JSAP.REQUIRED, 'r', "rho", "rho negative sampling parameters (if it's <0 we use even sampling)" ),
+                new FlaggedOption( "rho", JSAP.INTEGER_PARSER, "-1", JSAP.NOT_REQUIRED, 'r', "rho", "rho negative sampling parameters (if it's <0 we use even sampling)" ),
+                new FlaggedOption( "max", JSAP.INTEGER_PARSER, "-1", JSAP.NOT_REQUIRED, 'm', "max", "Max words per entity (<0 we use all the words)" ),
                 new FlaggedOption( "output", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'o', "output", "Compressed version" ), }
         );
         JSAPResult jsapResult = jsap.parse( args );
@@ -87,6 +88,7 @@ public class EntityEmbeddings extends Configured implements Tool {
         final int rho = jsapResult.getInt( "rho" );
         final int nwords = vectors.getSize();
         final int d = vectors.N;
+        final int maxWords = jsapResult.getInt( "max" ) > 0? jsapResult.getInt( "max" ):Integer.MAX_VALUE;
         final BufferedReader br = new BufferedReader( new InputStreamReader( new FileInputStream( new File( jsapResult.getString( "input" ) ) ) ) );
         int count = 0;
         pl.count = count;
@@ -98,14 +100,13 @@ public class EntityEmbeddings extends Configured implements Tool {
 
         float alpha = 10;
         EntityEmbeddings eb = new EntityEmbeddings();
-        final BufferedReader br2 = new BufferedReader( new InputStreamReader( new FileInputStream( new File( jsapResult.getString( "input" ) ) ) ) );
+        final BufferedReader br2 = new BufferedReader( new InputStreamReader( new FileInputStream( new File( jsapResult.getString( "input" ) ) ) , "UTF-8") );
         pl.start();
         String line;
         while( ( line = br2.readLine() ) != null ) {
             String[] parts = line.split( "\t" );
             if( parts.length > 1 ) {
-                System.out.println( "Training " + parts[ 0 ] );
-                TrainingExamples ex = eb.getVectors( parts[ 1 ], vectors, rho, nwords );
+                TrainingExamples ex = eb.getVectors( parts[ 1 ], vectors, rho, nwords, maxWords );
                 float[] w = eb.trainLR2( ex.x, d, ex.y, alpha );
                 pw.print( parts[ 0 ] + " " );
                 for( int i = 0; i < d; i++ ) {
@@ -118,10 +119,8 @@ public class EntityEmbeddings extends Configured implements Tool {
                 for( int i = 0; i < ex.y.length; i++ ) {
                     if( ex.y[ i ] > 0 ) {
                         double v = eb.scoreLR( ex.x[ i ], w );
-                        System.out.println( i + " =  " + v );
                     }
                 }
-
             }
         }
         br2.close();
@@ -149,7 +148,7 @@ public class EntityEmbeddings extends Configured implements Tool {
      * @param nwords total words in the vocabulary
      * @return training examples
      */
-    public TrainingExamples getVectors( String input, CompressedW2V vectors, int rho, int nwords ) {
+    public TrainingExamples getVectors( String input, CompressedW2V vectors, int rho, int nwords, int maxWordsPerEntity ) {
         String[] parts = input.split( "\\s+" );
         ArrayList<float[]> positive = new ArrayList<float[]>();
         ArrayList<float[]> negative = new ArrayList<float[]>();
@@ -160,9 +159,10 @@ public class EntityEmbeddings extends Configured implements Tool {
             float[] vectorOf = vectors.getVectorOf( s );
             if( vectorOf != null ) {
                 positive.add( vectorOf );
-                System.out.println( s + " -> " + ( tmp++ ) );
                 positiveWords.add( vectors.getWordId( s ) );
+                tmp++;
             }
+            if( tmp > maxWordsPerEntity ) break;
         }
 
         int total = 0;
@@ -285,6 +285,7 @@ public class EntityEmbeddings extends Configured implements Tool {
         int d;
         int rho = -1;
         float alpha = 10;
+        int maxWords = 150;
         EntityEmbeddings eb = new EntityEmbeddings();
 
         public void setup( Context context ) throws IOException {
@@ -302,12 +303,10 @@ public class EntityEmbeddings extends Configured implements Tool {
             final int nwords = vectors.getSize();
             String[] parts = t.toString().split( "\t" );
             if( parts.length > 1 ) {
-                TrainingExamples ex = eb.getVectors( parts[ 1 ], vectors, rho, nwords );
+                TrainingExamples ex = eb.getVectors( parts[ 1 ], vectors, rho, nwords, maxWords );
                 if( ex.y.length > 0 ) {
                     float[] w = eb.trainLR2( ex.x, d, ex.y, alpha );
                     StringBuffer sb = new StringBuffer();
-                    sb.append( parts[ 0 ] );
-                    sb.append( " " );
                     for( int i = 0; i < d; i++ ) {
                         sb.append( w[ i ] );
                         sb.append( " " );
@@ -317,6 +316,7 @@ public class EntityEmbeddings extends Configured implements Tool {
             }
         }
     }
+
 
     /**
      * Reducer class
@@ -357,7 +357,7 @@ public class EntityEmbeddings extends Configured implements Tool {
         // Specify various job-specific parameters
         job.setJobName( "Entity embeddings" );
         job.setNumReduceTasks( 1 );
-        job.setJarByClass( RunFELOntheGrid.class );
+        job.setJarByClass( EntityEmbeddings.class );
 
         job.setOutputKeyClass( Text.class );
         job.setOutputValueClass( Text.class );

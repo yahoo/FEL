@@ -18,6 +18,7 @@ import com.yahoo.semsearch.fastlinking.hash.AbstractEntityHash;
 import com.yahoo.semsearch.fastlinking.hash.QuasiSuccinctEntityHash;
 import com.yahoo.semsearch.fastlinking.view.Entity;
 import com.yahoo.semsearch.fastlinking.view.EntityContext;
+import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 
 /**
  * Computes an entity score using the similarity of two vectors:
@@ -28,8 +29,8 @@ import com.yahoo.semsearch.fastlinking.view.EntityContext;
  */
 public class CentroidEntityContext extends EntityContext {
     protected EntityScorer scorer;
-    protected QuasiSuccinctEntityHash hash; //TODO remove
-
+    protected QuasiSuccinctEntityHash hash; //TODO debug
+    protected Object2FloatOpenHashMap<Long> cache;
     protected EntityScorer.ScorerContext context;
 
     //hack for speeding up the id look-ups
@@ -81,11 +82,20 @@ public class CentroidEntityContext extends EntityContext {
     public void setContextWords( ArrayList<String> words ) {
         super.setContextWords( words );
         context = scorer.context( this.words );
+        cache = new Object2FloatOpenHashMap<>(  );
     }
 
+    public double getEntityContextScoreNoCache( Entity e ) {
+        return context.score( idMapping.get( e.id ) );
+    }
     @Override
     public double getEntityContextScore( Entity e ) {
-        return context.score( idMapping.get( e.id ) );
+        Long id =idMapping.get( e.id ); //TODO time this, it might be the case that adding to the hash is slower than recomputing for a few cache hits
+        Float s = cache.get( id );
+        if( s != null ) return s;
+        float f =  context.score( id );
+        cache.put( id, f );
+        return f;
     }
 
     @Override

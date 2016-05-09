@@ -36,7 +36,7 @@ public class FastEntityLinker {
 
     private static final String[] STOPWORDS = new String[]{ "wiki", "com", "www" };
     private static final Set<String> FILTER = new HashSet<String>( Arrays.asList( STOPWORDS ) );
-    private double nilValueOne = -100;
+    private double nilValueOne = -30;
     private final Entity nilEntity = new Entity( -1 );
     private EntityScore nilCandidate = new EntityScore( nilEntity, nilValueOne );
     private final Entity[] emptyEntities = new Entity[ 0 ];
@@ -463,8 +463,8 @@ public class FastEntityLinker {
 
             long time = -System.nanoTime();
             try {
-                List<EntityResult> results = fel.getResultsGreedy( q, 50 );
-                //List<EntityResult> results = fel.getResults( q, threshold );
+                //List<EntityResult> results = fel.getResultsGreedy( q, 50 );
+                List<EntityResult> results = fel.getResults( q, threshold );
                 for( EntityResult er : results ) {
                     System.out.println( q + "\t" + loc + "\t" + er.text + "\t" + er.score + "\t" + er.id );
                 }

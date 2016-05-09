@@ -256,8 +256,8 @@ public class Quantizer {
                 new Switch( "direct", 'd', "direct", "use a direct quantizer and not binary search" ),
                 new Switch( "hashheader", 'h', "hashheader", "if the embeddings file has a header present (will skip it)" ),
                 new FlaggedOption( "quantizer", JSAP.STRING_PARSER, "10", JSAP.NOT_REQUIRED, 'q', "quantizer", "Quantizer value" ),
-                new FlaggedOption( "error", JSAP.STRING_PARSER, "0.1", JSAP.NOT_REQUIRED, 'e', "error", "Error rate" ),
-                new Switch( "w2v", 'w', "w2v", "Use the original w2v format" ),
+                new FlaggedOption( "error", JSAP.STRING_PARSER, "0.35", JSAP.NOT_REQUIRED, 'e', "error", "Error rate" ),
+                new Switch( "w2v", 'w', "w2v", "Serialize the quantized vectors using the original w2v format. If you want to compress the vectors later, you must -not- use this option" ),
                 new FlaggedOption( "output", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'o', "output", "Compressed version" ), }
         );
         JSAPResult jsapResult = jsap.parse( args );
@@ -265,7 +265,7 @@ public class Quantizer {
         Quantizer q = new Quantizer();
         if( jsapResult.getBoolean( "direct" ) ) {
             System.out.println( "Using as a quantizer " + jsapResult.getString( "quantizer" ) + " (won't attempt to search for a better one) " );
-            q.quantizeSinglePass( jsapResult.getString( "input" ), jsapResult.getString( "output" ), Integer.parseInt( jsapResult.getString( "quantizer" ) ), jsapResult.getBoolean( "ignoreHeader" ), jsapResult
+            q.quantizeSinglePass( jsapResult.getString( "input" ), jsapResult.getString( "output" ), Integer.parseInt( jsapResult.getString( "quantizer" ) ), jsapResult.getBoolean( "hashheader" ), jsapResult
                     .getBoolean( "w2v" ) );
         } else {
             q.quantize( jsapResult.getString( "input" ), jsapResult.getString( "output" ), Double.parseDouble( jsapResult.getString( "error" ) ), jsapResult.getBoolean( "hashheader" ), jsapResult.getBoolean( "w2v" ) );

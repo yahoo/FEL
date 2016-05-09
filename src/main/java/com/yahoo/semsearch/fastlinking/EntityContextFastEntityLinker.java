@@ -208,4 +208,11 @@ public class EntityContextFastEntityLinker extends FastEntityLinker {
         context.setContextWords( ctxWords );
     }
 
+    @Override
+    public void setContext( String[] parts, int left, int right ) {
+        ArrayList<String> ctxWords = new ArrayList<>();
+        for( String p : parts )
+            ctxWords.add( p );
+        context.setContextWords( ctxWords );
+    }
 }
