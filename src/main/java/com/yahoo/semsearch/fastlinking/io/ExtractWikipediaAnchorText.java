@@ -38,6 +38,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.MapFile;
@@ -57,6 +58,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.lib.IdentityReducer;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -335,6 +337,7 @@ public class ExtractWikipediaAnchorText extends Configured implements Tool {
 				@SuppressWarnings("deprecation")
 				SequenceFile.Reader reader = new SequenceFile.Reader(FileSystem.getLocal(job), new Path("map.dat"), job);
 
+
 				HMapSIW val = new HMapSIW();
 				while (reader.next(new Text(), val)) {
 					for (String anchor : val.keySet()) {
@@ -492,11 +495,31 @@ public class ExtractWikipediaAnchorText extends Configured implements Tool {
 
 	}
 
+
+	public boolean getMergeInHdfs(String src, String dest, JobConf conf) throws IllegalArgumentException, IOException {
+		FileSystem fs = FileSystem.get(conf);
+		Path srcPath = new Path(src);
+		Path dstPath = new Path(dest);
+
+		// Check if the path already exists
+		if (!(fs.exists(srcPath))) {
+			LOG.info("Path " + src + " does not exists!");
+			return false;
+		}
+
+		if (!(fs.exists(dstPath))) {
+			LOG.info("Path " + dest + " does not exists!");
+			return false;
+		}
+		return FileUtil.copyMerge(fs, srcPath, fs, dstPath, false, conf, null);
+	}
+
 	private static final String INPUT_OPTION = "input";
 	private static final String ENTITYMAP_OPTION = "emap";
 	private static final String ANCHORMAP_OPTION = "amap";
 	private static final String CFMAP_OPTION = "cfmap";
 	private static final String REDIRECTS_OPTION = "redir";
+	private static final String PHASE_OPTION = "phase";
 
 	@SuppressWarnings("static-access")
 	@Override
@@ -507,6 +530,8 @@ public class ExtractWikipediaAnchorText extends Configured implements Tool {
 		options.addOption(OptionBuilder.withArgName("path").hasArg().withDescription("output for anchor map").create(ANCHORMAP_OPTION));
 		options.addOption(OptionBuilder.withArgName("path").hasArg().withDescription("output for anchor cf map").create(CFMAP_OPTION));
 		options.addOption(OptionBuilder.withArgName("path").hasArg().withDescription("output for redirects").create(REDIRECTS_OPTION));
+
+		options.addOption(OptionBuilder.withArgName("phase").hasArg().withDescription("set for phase two").create(PHASE_OPTION));
 
 		CommandLine cmdline;
 		CommandLineParser parser = new GnuParser();
@@ -527,13 +552,19 @@ public class ExtractWikipediaAnchorText extends Configured implements Tool {
 
 		Random random = new Random();
 		String tmp = "tmp-" + this.getClass().getCanonicalName() + "-" + random.nextInt(10000);
-
-		task0(cmdline.getOptionValue(INPUT_OPTION), cmdline.getOptionValue(REDIRECTS_OPTION));
-		task1(cmdline.getOptionValue(INPUT_OPTION), tmp);
-		task2(tmp, cmdline.getOptionValue(ENTITYMAP_OPTION), cmdline.getOptionValue(REDIRECTS_OPTION));
-		task3(cmdline.getOptionValue(INPUT_OPTION), cmdline.getOptionValue(ENTITYMAP_OPTION), cmdline.getOptionValue(CFMAP_OPTION));
-		task4(cmdline.getOptionValue(ENTITYMAP_OPTION), cmdline.getOptionValue(ANCHORMAP_OPTION));
-		merge(cmdline.getOptionValue(ANCHORMAP_OPTION), cmdline.getOptionValue(CFMAP_OPTION));
+		String phase = cmdline.getOptionValue(PHASE_OPTION);
+		Boolean phaseTwo = ( phase != null && phase.equalsIgnoreCase( "2" ) );
+		Boolean phaseThree = ( phase != null && phase.equalsIgnoreCase( "3" ) );
+		if( !phaseTwo && !phaseThree ) {
+			task0( cmdline.getOptionValue( INPUT_OPTION ), cmdline.getOptionValue( REDIRECTS_OPTION ) );
+			task1( cmdline.getOptionValue( INPUT_OPTION ), tmp );
+			task2( tmp, cmdline.getOptionValue( ENTITYMAP_OPTION ), cmdline.getOptionValue( REDIRECTS_OPTION ) );
+		}else if ( phaseTwo ) {
+			task3( cmdline.getOptionValue( INPUT_OPTION ), cmdline.getOptionValue( ENTITYMAP_OPTION ), cmdline.getOptionValue( CFMAP_OPTION ) );
+		}else{
+			task4( cmdline.getOptionValue( ENTITYMAP_OPTION ), cmdline.getOptionValue( ANCHORMAP_OPTION ) );
+			merge( cmdline.getOptionValue( ANCHORMAP_OPTION ), cmdline.getOptionValue( CFMAP_OPTION ) );
+		}
 
 		return 0;
 	}
@@ -546,7 +577,7 @@ public class ExtractWikipediaAnchorText extends Configured implements Tool {
 	 * @throws IOException
 	 */
 	private void task0(String inputPath, String outputPath) throws IOException {
-		LOG.info("Exracting redirects (phase 0)...");
+		LOG.info("Extracting redirects (phase 0)...");
 		LOG.info(" - input: " + inputPath);
 		LOG.info(" - output: " + outputPath);
 
@@ -581,7 +612,7 @@ public class ExtractWikipediaAnchorText extends Configured implements Tool {
 	 * @throws IOException
 	 */
 	private void task1(String inputPath, String outputPath) throws IOException {
-		LOG.info("Exracting anchor text (phase 1)...");
+		LOG.info("Extracting anchor text (phase 1)...");
 		LOG.info(" - input: " + inputPath);
 		LOG.info(" - output: " + outputPath);
 
@@ -622,9 +653,12 @@ public class ExtractWikipediaAnchorText extends Configured implements Tool {
 	 * @throws IOException
 	 */
 	private void task2(String inputPath, String outputPath, String redirPath) throws IOException {
-		LOG.info("Exracting anchor text (phase 2)...");
+		LOG.info("Extracting anchor text (phase 2)...");
 		LOG.info(" - input: " + inputPath);
 		LOG.info(" - output: " + outputPath);
+		Random r = new Random(  );
+		//String tmpOutput = "tmp-" + this.getClass().getCanonicalName() + "-" + r.nextInt(10000);
+		//LOG.info( "intermediate folder for merge " + tmpOutput );
 
 		JobConf conf = new JobConf(getConf(), ExtractWikipediaAnchorText.class);
 		conf.setJobName(String.format("ExtractWikipediaAnchorText:phase2[input: %s, output: %s]", inputPath, outputPath));
@@ -641,6 +675,7 @@ public class ExtractWikipediaAnchorText extends Configured implements Tool {
 
 		FileInputFormat.addInputPath(conf, new Path(inputPath));
 		FileOutputFormat.setOutputPath(conf, new Path(outputPath));
+		//FileOutputFormat.setOutputPath(conf, new Path(tmpOutput));
 
 		conf.setInputFormat(SequenceFileInputFormat.class);
 		conf.setOutputFormat(MapFileOutputFormat.class);
@@ -661,6 +696,14 @@ public class ExtractWikipediaAnchorText extends Configured implements Tool {
 		JobClient.runJob(conf);
 		// Clean up intermediate data.
 		FileSystem.get(conf).delete(new Path(inputPath), true);
+
+		/*
+		//merge
+		String finalO = outputPath+"/part-00000/data";
+		FileSystem.get(conf).mkdirs( new Path( outputPath + "part-00000") );
+		getMergeInHdfs( tmpOutput, finalO, conf );
+		FileSystem.get(conf).delete(new Path(tmpOutput), true);
+		*/
 	}
 
 	/**
@@ -672,7 +715,7 @@ public class ExtractWikipediaAnchorText extends Configured implements Tool {
 	 * @throws IOException
 	 */
 	private void task3(String inputPath, String mapPath, String outputPath) throws IOException {
-		LOG.info("Exracting anchor text (phase 3)...");
+		LOG.info("Extracting anchor text (phase 3)...");
 		LOG.info(" - input:   " + inputPath);
 		LOG.info(" - output:  " + outputPath);
 		LOG.info(" - mapping: " + mapPath);
@@ -681,11 +724,11 @@ public class ExtractWikipediaAnchorText extends Configured implements Tool {
 		conf.setJobName(String.format("ExtractWikipediaAnchorText:phase3[input: %s, output: %s]", inputPath, outputPath));
 
 		conf.setNumReduceTasks(1);
-
 		String location = "map.dat";
 
 		try {
 			DistributedCache.addCacheFile(new URI(mapPath + "/part-00000/data" + "#" + location), conf);
+			//DistributedCache.addCacheFile(new URI(mapPath + "/singleentitymap.data" + "#" + location), conf);
 			DistributedCache.createSymlink(conf);
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
@@ -728,7 +771,8 @@ public class ExtractWikipediaAnchorText extends Configured implements Tool {
 
 		conf.setNumReduceTasks(1);
 
-		FileInputFormat.addInputPath(conf, new Path(inputPath + "/part-00000/data"));
+		//FileInputFormat.addInputPath(conf, new Path(inputPath + "/part-00000/data"));
+		FileInputFormat.addInputPath(conf, new Path(inputPath + "/part-*/data"));
 		FileOutputFormat.setOutputPath(conf, new Path(outputPath));
 
 		conf.setInputFormat(SequenceFileInputFormat.class);
@@ -765,8 +809,8 @@ public class ExtractWikipediaAnchorText extends Configured implements Tool {
 		IntWritable df = new IntWritable();
 		while (dfMapReader.next(key, df)) {
 
-			if (!key.toString().equalsIgnoreCase("Jim Durham"))
-				continue;
+			//if (!key.toString().equalsIgnoreCase("Jim Durham"))
+			//	continue;
 
 			HMapSIW map = new HMapSIW();
 			anchorMapReader.get(key, map);
