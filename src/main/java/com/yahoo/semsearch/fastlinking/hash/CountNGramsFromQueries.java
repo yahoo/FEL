@@ -104,7 +104,7 @@ public class CountNGramsFromQueries {
                 for( int j = i; j < words.length; j++ ) {
                     sb.append( words[ j ] );
                     String ss = sb.toString();
-                    Long l = ( ( Long ) f.get( ss ) );
+                    Long l = f.get( ss );
                     if( l != null ) {
                         counts[ l.intValue() ] += sc.candidatesInfo.QAT;
                     }
@@ -148,7 +148,7 @@ public class CountNGramsFromQueries {
      * 
      * The entity_info format:
      * 
-     * phaser_id + \u0001 + type_id + \u0001 + QEF + \u0001 + QAEF + \u0001 +
+     * id + \u0001 + type_id + \u0001 + QEF + \u0001 + QAEF + \u0001 +
      * MEF + \u0001 + MAEF + \u0001 + LEF + \u0001 + LAEF
      */
 }
