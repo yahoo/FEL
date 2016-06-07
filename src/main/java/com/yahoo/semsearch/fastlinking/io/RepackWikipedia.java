@@ -195,8 +195,8 @@ public class RepackWikipedia extends Configured implements Tool {
 		job.setInputFormatClass(WikipediaPageInputFormat.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);
 		job.setOutputKeyClass(IntWritable.class);
-		//job.setOutputValueClass(WikipediaPageFactory.getWikipediaPageClass(language));
-		job.setOutputValueClass(EnglishWikipediaPage.class);
+		job.setOutputValueClass(WikipediaPageFactory.getWikipediaPageClass(language));
+		//job.setOutputValueClass(EnglishWikipediaPage.class);
 
 		job.setMapperClass(MyMapper.class);
 
