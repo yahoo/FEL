@@ -140,17 +140,20 @@ com.yahoo.semsearch.fastlinking.hash.QuasiSuccinctEntityHash -i <datapack_file> 
 ## Models 
 ### English 
 
-[English Hash trained from November 2015 Wikipedia](http://s286209735.onlinehome.us/wsdm2017/en/english-nov15.hash)
-[English Entity Embeddings](http://s286209735.onlinehome.us/wsdm2017/en/enwiki.wiki2vec.d300.compressed)
+* [English Hash trained from November 2015 Wikipedia](http://s286209735.onlinehome.us/wsdm2017/en/english-nov15.hash)
+
+* [English Entity Embeddings](http://s286209735.onlinehome.us/wsdm2017/en/enwiki.wiki2vec.d300.compressed)
 
 ### Spanish
 
-[Spanish Hash trained from October 2015 Wikipedia](http://s286209735.onlinehome.us/wsdm2017/es/spanish-oct15.hash)
-[Spanish Entity Embeddings](http://s286209735.onlinehome.us/wsdm2017/es/eswiki.wiki2vec.d300.compressed)
+* [Spanish Hash trained from October 2015 Wikipedia](http://s286209735.onlinehome.us/wsdm2017/es/spanish-oct15.hash)
+
+* [Spanish Entity Embeddings](http://s286209735.onlinehome.us/wsdm2017/es/eswiki.wiki2vec.d300.compressed)
 
 
 ### Chinese (Simplified)
 
-[Chinese Hash trained from January 2016 Wikipedia](http://s286209735.onlinehome.us/wsdm2017/zh/chinese-dec15.hash)
-[Chinese Entity Embeddings](http://s286209735.onlinehome.us/wsdm2017/zh/zhwiki.d400.quantized.compressed)
+* [Chinese Hash trained from January 2016 Wikipedia](http://s286209735.onlinehome.us/wsdm2017/zh/chinese-dec15.hash)
+
+* [Chinese Entity Embeddings](http://s286209735.onlinehome.us/wsdm2017/zh/zhwiki.d400.quantized.compressed)
 
