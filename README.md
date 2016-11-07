@@ -26,8 +26,7 @@ The library also comes with two different sets of tools for generating the hash 
 * Generating entity vectors out of a set of entity descriptions, which can be extracted from Wikipedia pages.
 * Compressing word vectors (typical compression ratios are around 10x).
 
-If you use this library, please cite the following paper:
-
+If you use this library, please cite following papers:
     @inproceedings{Blanco:WSDM2015,
             Address = {New York, NY, USA},
             Author = {Blanco, Roi and Ottaviano, Giuseppe and Meij, Edgar},
@@ -37,7 +36,19 @@ If you use this library, please cite the following paper:
             Publisher = {ACM},
             Series = {WSDM '15},
             Title = {Fast and Space-Efficient Entity Linking in Queries},
-            Year = {2015},
+            Year = {2015}
+    }
+    
+    @inproceedings{Pappu:WSDM2017,
+            Address = {New York, NY, USA},
+            Author = {Pappu, Aasish, and Blanco, Roi, and Mehdad, Yashar and Stent, Amanda, and Thadani, Kapil},
+            Booktitle = {Proceedings of the Tenth ACM International Conference on Web Search and Data Mining},
+            Location = {Cambridge, UK},
+            Numpages = {10},
+            Publisher = {ACM},
+            Series = {WSDM '17},
+            Title = {Lightweight Multilingual Entity Extraction and Linking},
+            Year = {2017}
     }
 
 
