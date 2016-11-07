@@ -15,7 +15,7 @@ The library performs query and document entity linking. It implements different 
 that should be (more or less) comparable across pieces of text of different length so one can use a global threshold for linking. The program operates
 with two datastructures, one big hash and compressed word and entity vectors. The hash is generated out of a datapack that records __counts__ of
 phrases and entities that co-ocur together. This counts might come from different sources, for instance anchor text and query logs. In anchor
-text, whenever there's a link to a corresponding entity page we would store the anchor and the entity counds. In a query log whenever there's a
+text, whenever there is a link to a corresponding entity page we would store the anchor and the entity counds. In a query log whenever there is a
 click to an entity page, we would update the query and entity counts. The word and entity vector files are compressed vector (duh) representations
 that account for the contexts in which the word/entity appears. Word vectors can be generated using general tools like word2vec, whereas the library
 provides a way to learn the entity vectors.
@@ -57,7 +57,7 @@ If you use this library, please cite following papers:
 
 There are a number of different rankers/linkers that use different conceptual models. The overall description of the algorithm with some implementation details is at:
 
-[Fast and space efficient entity linking for queries](http://www.dc.fi.udc.es/~roi/publications/wsdm2015.pdf)
+[Fast and space efficient entity linking for queries]
 
 The two main classes to use are 
 com.yahoo.semsearch.fastlinking.FastEntityLinker (no context)
@@ -66,7 +66,7 @@ com.yahoo.semsearch.fastlinking.EntityContextFastEntityLinker (context-aware)
 The classes can be called with --help for the input option list.
 They provide interactive linking through stdin (edit the code or extend for custom output format).
 
-Example usage calls (you don't need rlwrap but it's nice to have):
+Example usage calls (you do not need rlwrap but it is nice to have):
 ```bash
 rlwrap java -Xmx10G com.yahoo.semsearch.fastlinking.EntityContextFastEntityLinker -h data/alias.hash -u data/PHRASE.model -e data/ENTITIES.PHRASE.model
 
@@ -76,7 +76,7 @@ rlwrap java -Xmx10G com.yahoo.semsearch.fastlinking.FastEntityLinker data/alias.
 #### Coherent Entity Linking for Documents
 
 CoherentEntityLinker class takes entity-mentions and n-best list of entity-links for each entity mention as input. It constructs a lattice from the nbest lists  and runs Forward-Backward algorithm.
- * J. Binder, K. Murphy and S. Russell. Space-Efficient Inference in Dynamic Probabilistic Networks. Int'l, Joint Conf. on Artificial Intelligence, 1997.
+ * J. Binder, K. Murphy and S. Russell. Space-Efficient Inference in Dynamic Probabilistic Networks. International, Joint Conf. on Artificial Intelligence, 1997.
 
 More coherency algorithms  are under experimentation. They will be added in the future version of the code. 
 
@@ -136,3 +136,21 @@ The datapack will contain two files: one with the per-entity counts and one with
 ```bash
 com.yahoo.semsearch.fastlinking.hash.QuasiSuccinctEntityHash -i <datapack_file> -e <entity2id_file> -o <output_file>
 ```
+
+## Models 
+### English 
+
+[English Hash trained from November 2015 Wikipedia](http://s286209735.onlinehome.us/wsdm2017/en/english-nov15.hash)
+[English Entity Embeddings](http://s286209735.onlinehome.us/wsdm2017/en/enwiki.wiki2vec.d300.compressed)
+
+### Spanish
+
+[Spanish Hash trained from October 2015 Wikipedia](http://s286209735.onlinehome.us/wsdm2017/es/spanish-oct15.hash)
+[Spanish Entity Embeddings](http://s286209735.onlinehome.us/wsdm2017/es/eswiki.wiki2vec.d300.compressed)
+
+
+### Chinese (Simplified)
+
+[Chinese Hash trained from January 2016 Wikipedia](http://s286209735.onlinehome.us/wsdm2017/zh/chinese-dec15.hash)
+[Chinese Entity Embeddings](http://s286209735.onlinehome.us/wsdm2017/zh/zhwiki.d400.quantized.compressed)
+
