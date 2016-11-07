@@ -27,6 +27,7 @@ The library also comes with two different sets of tools for generating the hash 
 * Compressing word vectors (typical compression ratios are around 10x).
 
 If you use this library, please cite following papers:
+    
     @inproceedings{Blanco:WSDM2015,
             Address = {New York, NY, USA},
             Author = {Blanco, Roi and Ottaviano, Giuseppe and Meij, Edgar},
@@ -34,7 +35,7 @@ If you use this library, please cite following papers:
             Location = {Shanghai, China},
             Numpages = {10},
             Publisher = {ACM},
-            Series = {WSDM '15},
+            Series = {WSDM 15},
             Title = {Fast and Space-Efficient Entity Linking in Queries},
             Year = {2015}
     }
@@ -46,7 +47,7 @@ If you use this library, please cite following papers:
             Location = {Cambridge, UK},
             Numpages = {10},
             Publisher = {ACM},
-            Series = {WSDM '17},
+            Series = {WSDM 17},
             Title = {Lightweight Multilingual Entity Extraction and Linking},
             Year = {2017}
     }
