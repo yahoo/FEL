@@ -138,6 +138,7 @@ com.yahoo.semsearch.fastlinking.hash.QuasiSuccinctEntityHash -i <datapack_file> 
 ```
 
 ## Models 
+Following Models are trained on Wikipedia and distributed using Creative Commons BY SA 4.0 license (see MODELS_LICENSE) 
 ### English 
 
 * [English Hash trained from November 2015 Wikipedia](http://s286209735.onlinehome.us/wsdm2017/en/english-nov15.hash)
