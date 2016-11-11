@@ -141,15 +141,15 @@ com.yahoo.semsearch.fastlinking.hash.QuasiSuccinctEntityHash -i <datapack_file> 
 Following Models are trained on Wikipedia and distributed using Creative Commons BY SA 4.0 license (see MODELS_LICENSE) 
 ### English 
 
-* [English Hash trained from November 2015 Wikipedia](http://s286209735.onlinehome.us/wsdm2017/en/english-nov15.hash)
+* [English Hash trained from November 2015 Wikipedia]()
 
-* [English Entity Embeddings](http://s286209735.onlinehome.us/wsdm2017/en/enwiki.wiki2vec.d300.compressed)
+* [English Entity Embeddings]()
 
 ### Spanish
 
-* [Spanish Hash trained from October 2015 Wikipedia](http://s286209735.onlinehome.us/wsdm2017/es/spanish-oct15.hash)
+* [Spanish Hash trained from October 2015 Wikipedia]()
 
-* [Spanish Entity Embeddings](http://s286209735.onlinehome.us/wsdm2017/es/eswiki.wiki2vec.d300.compressed)
+* [Spanish Entity Embeddings]()
 
 
 ### Chinese (Simplified)
