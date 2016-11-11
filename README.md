@@ -154,7 +154,7 @@ Following Models are trained on Wikipedia and distributed using Creative Commons
 
 ### Chinese (Simplified)
 
-* [Chinese Hash trained from January 2016 Wikipedia](http://s286209735.onlinehome.us/wsdm2017/zh/chinese-dec15.hash)
+* [Chinese Hash trained from January 2016 Wikipedia]()
 
-* [Chinese Entity Embeddings](http://s286209735.onlinehome.us/wsdm2017/zh/zhwiki.d400.quantized.compressed)
+* [Chinese Entity Embeddings]()
 
