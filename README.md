@@ -16,7 +16,7 @@ that should be (more or less) comparable across pieces of text of different leng
 with two datastructures, one big hash and compressed word and entity vectors. The hash is generated out of a datapack that records __counts__ of
 phrases and entities that co-ocur together. This counts might come from different sources, for instance anchor text and query logs. In anchor
 text, whenever there is a link to a corresponding entity page we would store the anchor and the entity counds. In a query log whenever there is a
-click to an entity page, we would update the query and entity counts. The word and entity vector files are compressed vector (duh) representations
+click to an entity page, we would update the query and entity counts. The word and entity vector files are compressed vector  representations
 that account for the contexts in which the word/entity appears. Word vectors can be generated using general tools like word2vec, whereas the library
 provides a way to learn the entity vectors.
 
@@ -59,18 +59,18 @@ There are a number of different rankers/linkers that use different conceptual mo
 
 [Fast and space efficient entity linking for queries]
 
-The two main classes to use are 
-com.yahoo.semsearch.fastlinking.FastEntityLinker (no context)
-com.yahoo.semsearch.fastlinking.EntityContextFastEntityLinker (context-aware)
+The main class to use is 
+com.yahoo.semsearch.fastlinking.FastEntityLinker 
 
-The classes can be called with --help for the input option list.
+The class can be called with --help for the input option list.
 They provide interactive linking through stdin (edit the code or extend for custom output format).
 
-Example usage calls (you do not need rlwrap but it is nice to have):
-```bash
-rlwrap java -Xmx10G com.yahoo.semsearch.fastlinking.EntityContextFastEntityLinker -h data/alias.hash -u data/PHRASE.model -e data/ENTITIES.PHRASE.model
+First download the dataset from webscope following the links [provided] (#models) 
 
-rlwrap java -Xmx10G com.yahoo.semsearch.fastlinking.FastEntityLinker data/alias.hash
+Example usage call (you do not need rlwrap but it is nice to have):
+```bash
+
+rlwrap java -Xmx10G com.yahoo.semsearch.fastlinking.FastEntityLinker en/english-nov15.hash
 ```
 
 #### Coherent Entity Linking for Documents
@@ -81,8 +81,9 @@ CoherentEntityLinker class takes entity-mentions and n-best list of entity-links
 More coherency algorithms  are under experimentation. They will be added in the future version of the code. 
 
 ```bash
- java -Xmx512m -Xmx10g exec:java -Dexec.mainClass=com.yahoo.semsearch.fastlinking.CoherentEntityLinker -Dexec.args="enwiki.wiki2vec.d300.compressed data/alias.hash data/ENTITIES.PHRASE.model data/PHRASE.model"  -Dexec.classpathScope=compile
+ java -Xmx512m -Xmx10g exec:java -Dexec.mainClass=com.yahoo.semsearch.fastlinking.CoherentEntityLinker -Dexec.args="en/enwiki.wiki2vec.d300.compressed en/english-nov15.hash"  -Dexec.classpathScope=compile
 ```
+You can include  [mapping file](src/main/bash/id-type.tsv) in the entity linker arguments (below) that maps integral entity categories to human-readable entity categories. 
 
 #### Grid based linking
 The following command would run the linker on a hadoop grid:
@@ -93,7 +94,7 @@ The following command would run the linker on a hadoop grid:
     -Dmapreduce.map.java.opts=-Xmx3g \
     -Dmapreduce.map.memory.mb=3072 \
     -Dmapred.job.queue.name=adhoc \
-    -files /grid/0/tmp/roi/hashfile#hash,/grid/0/tmp/roi/id-type.tsv#mapping \
+    -files en/english-nov15.hash#hash, src/main/bash/id-type.tsv#mapping \
     <inputfile>
     <outputfile>
 ```
@@ -131,7 +132,7 @@ More on this can be found in the [io package](src/main/java/com/yahoo/semsearch/
 
 ####Creating a Quasi-succing entity features hash
 
-The datapack will contain two files: one with the per-entity counts and one with the entity to id mappin. Then, you can hash it using:
+The datapack will contain two files: one with the per-entity counts and one with the entity to id mapping. Then, you can hash it using:
 
 ```bash
 com.yahoo.semsearch.fastlinking.hash.QuasiSuccinctEntityHash -i <datapack_file> -e <entity2id_file> -o <output_file>
@@ -141,20 +142,20 @@ com.yahoo.semsearch.fastlinking.hash.QuasiSuccinctEntityHash -i <datapack_file> 
 Following Models are trained on Wikipedia and distributed using Creative Commons BY SA 4.0 license (see MODELS_LICENSE) 
 ### English 
 
-* [English Hash trained from November 2015 Wikipedia]()
+* [English Hash trained from November 2015 Wikipedia](http://webscope.sandbox.yahoo.com/catalog.php?datatype=l&did=81)
 
-* [English Entity Embeddings]()
+* [English Entity Embeddings](http://webscope.sandbox.yahoo.com/catalog.php?datatype=l&did=81)
 
 ### Spanish
 
-* [Spanish Hash trained from October 2015 Wikipedia]()
+* [Spanish Hash trained from October 2015 Wikipedia](http://webscope.sandbox.yahoo.com/catalog.php?datatype=l&did=81)
 
-* [Spanish Entity Embeddings]()
+* [Spanish Entity Embeddings](http://webscope.sandbox.yahoo.com/catalog.php?datatype=l&did=81)
 
 
 ### Chinese (Simplified)
 
-* [Chinese Hash trained from January 2016 Wikipedia]()
+* [Chinese Hash trained from December 2015 Wikipedia](http://webscope.sandbox.yahoo.com/catalog.php?datatype=l&did=81)
 
-* [Chinese Entity Embeddings]()
+* [Chinese Entity Embeddings](http://webscope.sandbox.yahoo.com/catalog.php?datatype=l&did=81)
 
