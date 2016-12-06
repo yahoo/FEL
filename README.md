@@ -65,7 +65,7 @@ com.yahoo.semsearch.fastlinking.FastEntityLinker
 The class can be called with --help for the input option list.
 They provide interactive linking through stdin (edit the code or extend for custom output format).
 
-First download the dataset from webscope following the links [provided] (#models) 
+First download the dataset from webscope following the links [provided below] (#models) 
 
 Example usage call (you do not need rlwrap but it is nice to have):
 ```bash
@@ -139,7 +139,7 @@ com.yahoo.semsearch.fastlinking.hash.QuasiSuccinctEntityHash -i <datapack_file> 
 ```
 
 ## Models 
-Following Models are trained on Wikipedia and distributed using Creative Commons BY SA 4.0 license (see MODELS_LICENSE) 
+Following pre-trained models are provided to perform entity linking with the toolkit and are available through Yahoo! webscope program for research purposes. These models are trained on Wikipedia and distributed using Creative Commons BY SA 4.0 license (see MODELS_LICENSE) 
 ### English 
 
 * [English Hash trained from November 2015 Wikipedia](http://webscope.sandbox.yahoo.com/catalog.php?datatype=l&did=81)
