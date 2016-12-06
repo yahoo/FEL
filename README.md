@@ -161,4 +161,4 @@ Following pre-trained models are provided to perform entity linking with the too
 
 ## Contact
 
-[Roi Blanco](https://github.com/roicho), (Aasish Pappu](https://github.com/aasish)
+[Roi Blanco](https://github.com/roicho), [Aasish Pappu](https://github.com/aasish)
