@@ -159,3 +159,6 @@ Following pre-trained models are provided to perform entity linking with the too
 
 * [Chinese Entity Embeddings](http://webscope.sandbox.yahoo.com/catalog.php?datatype=l&did=81)
 
+## Contact
+
+(Roi Blanco)[https://github.com/roicho], (Aasish Pappu)[https://github.com/aasish]
