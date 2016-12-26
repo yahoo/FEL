@@ -2,8 +2,22 @@
  Copyright 2016, Yahoo Inc.
  Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
  **/
-
 package com.yahoo.semsearch.fastlinking;
+
+import it.unimi.dsi.fastutil.io.BinIO;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import com.yahoo.semsearch.fastlinking.entityranker.CandidateRanker;
 import com.yahoo.semsearch.fastlinking.entityranker.EntityRelevanceJudgment;
@@ -13,11 +27,13 @@ import com.yahoo.semsearch.fastlinking.hash.AbstractEntityHash;
 import com.yahoo.semsearch.fastlinking.hash.CountAndRecordStats;
 import com.yahoo.semsearch.fastlinking.hash.QuasiSuccinctEntityHash;
 import com.yahoo.semsearch.fastlinking.utils.Normalize;
-import com.yahoo.semsearch.fastlinking.view.*;
-import it.unimi.dsi.fastutil.io.BinIO;
-
-import java.io.*;
-import java.util.*;
+import com.yahoo.semsearch.fastlinking.view.CandidatesInfo;
+import com.yahoo.semsearch.fastlinking.view.EmptyContext;
+import com.yahoo.semsearch.fastlinking.view.Entity;
+import com.yahoo.semsearch.fastlinking.view.EntityContext;
+import com.yahoo.semsearch.fastlinking.view.EntityScore;
+import com.yahoo.semsearch.fastlinking.view.EntitySpan;
+import com.yahoo.semsearch.fastlinking.view.Span;
 
 /**
  * Entity linker class. this class uses an AbstractEntityHash to select candidates and proxies the scoring of
@@ -31,16 +47,30 @@ public class FastEntityLinker {
 
 
     protected EntityContext context;
-    private AbstractEntityHash hash;
+    protected AbstractEntityHash hash;
     public CandidateRanker ranker;
 
     private static final String[] STOPWORDS = new String[]{ "wiki", "com", "www" };
     private static final Set<String> FILTER = new HashSet<String>( Arrays.asList( STOPWORDS ) );
-    private double nilValueOne = -30;
+    private double nilValueOne = -100;
     private final Entity nilEntity = new Entity( -1 );
     private EntityScore nilCandidate = new EntityScore( nilEntity, nilValueOne );
     private final Entity[] emptyEntities = new Entity[ 0 ];
-
+    
+    /** 
+     * No-args constructor for Kappa.
+     * Automatically called by {@link EntityContextFastEntityLinker#EntityContextFastEntityLinker(String, String, String)}
+     */
+    protected FastEntityLinker() { }
+    
+    /** 
+     * Constructor for FEL without context. Used by Kappa.
+     * @param hashFile
+     */
+    public FastEntityLinker(String hashFile) throws ClassNotFoundException, IOException {
+        this((QuasiSuccinctEntityHash)BinIO.loadObject(hashFile), new EmptyContext());
+    }
+    
     public FastEntityLinker( AbstractEntityHash hash, EntityContext context ) {
         this.hash = hash;
         this.ranker = new ProbabilityRanker( ( QuasiSuccinctEntityHash ) hash );
@@ -62,17 +92,19 @@ public class FastEntityLinker {
     /**
      * Inner class to store partial ranking results, a span, the alias and the score
      */
-    public class EntityResult implements Comparable<EntityResult> {
+    public static class EntityResult implements Comparable<EntityResult> {
         public Span s;
         public CharSequence text;
         public int id;
         public double score;
+        public short type;
 
-        private EntityResult( Span s, CharSequence text, int id, double score ) {
+        private EntityResult( Span s, CharSequence text, int id, double score, short type ) {
             this.id = id;
             this.text = text;
             this.s = s;
             this.score = score;
+            this.type = type;
         }
 
         @Override
@@ -95,7 +127,7 @@ public class FastEntityLinker {
             if( span.e.id != -1 ) {
                 Entity e = span.e;
                 CharSequence text = hash.getEntityName( e.id );
-                if( span.score > threshold ) res.add( new EntityResult( span, text, e.id, span.score ) );
+                if( span.score > threshold ) res.add( new EntityResult( span, text, e.id, span.score, e.type ) );
             }
         }
         Collections.sort( res );
@@ -382,9 +414,8 @@ public class FastEntityLinker {
      * @param candidatesPerSpot number of candidates to score per spot
      * @param context           class to score the context
      * @return all candidates found in the input query
-     * @throws InterruptedException
      */
-    public ArrayList<EntityScore> generateAllCandidates( String q, int candidatesPerSpot, EntityContext context ) throws InterruptedException {
+    public ArrayList<EntityScore> generateAllCandidates( String q, int candidatesPerSpot, EntityContext context ) {
         ArrayList<EntityScore> allCandidates = new ArrayList<EntityScore>();
         String parts[] = Normalize.normalize( q ).split( "\\s+" );
         final int l = parts.length;
@@ -414,9 +445,8 @@ public class FastEntityLinker {
      * @param query input string
      * @param k     number of top candidates to return. This number is global for the whole query. If you want k candidates per span use generateAllCandidates
      * @return scores for all candidates found in the query
-     * @throws InterruptedException
      */
-    public List<EntityResult> getResultsGreedy( final String query, int k ) throws InterruptedException {
+    public List<EntityResult> getResultsGreedy( final String query, int k ) {
         List<EntityResult> res = new ArrayList<EntityResult>();
         ArrayList<EntityScore> scores = generateAllCandidates( query, k, context );
         int i = 0;
@@ -424,7 +454,7 @@ public class FastEntityLinker {
             EntityScore s = scores.get( i );
             CharSequence n = hash.getEntityName( s.entity.id );
             if( !Double.isNaN( s.score ) ) {
-                res.add( new EntityResult( new EntitySpan( query ), n, s.entity.id, s.score ) );
+                res.add( new EntityResult( new EntitySpan( query ), n, s.entity.id, s.score, s.entity.type ) );
             } else {
                 k++;
             }
@@ -463,8 +493,8 @@ public class FastEntityLinker {
 
             long time = -System.nanoTime();
             try {
-                //List<EntityResult> results = fel.getResultsGreedy( q, 50 );
-                List<EntityResult> results = fel.getResults( q, threshold );
+                List<EntityResult> results = fel.getResultsGreedy( q, 50 );
+                //List<EntityResult> results = fel.getResults( q, threshold );
                 for( EntityResult er : results ) {
                     System.out.println( q + "\t" + loc + "\t" + er.text + "\t" + er.score + "\t" + er.id );
                 }

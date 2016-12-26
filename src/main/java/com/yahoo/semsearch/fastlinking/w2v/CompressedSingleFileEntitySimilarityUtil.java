@@ -2,11 +2,11 @@
  Copyright 2016, Yahoo Inc.
  Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
  **/
-
 package com.yahoo.semsearch.fastlinking.w2v;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -38,12 +38,8 @@ public class CompressedSingleFileEntitySimilarityUtil extends CompressedEntitySi
      */
     @Override
     public double entity2EntitySimilarity(String entity1, String entity2) {
-        //system.out.println(entity1);
-        //System.out.println(entity2);
         float[] e1 = vector.getVectorOf( entity1  );
-       // System.out.println(e1);
         float[] e2 = vector.getVectorOf( entity2  );
-       // System.out.println(e2);
         if( e1 != null && e2 != null ) {
             return WordVectorsUtils.sim(e1, e2, dimensions);
         }
@@ -60,8 +56,6 @@ public class CompressedSingleFileEntitySimilarityUtil extends CompressedEntitySi
     @Override
     public double entity2WordSimilarity( String entity, String phrase ) {
         float[] entityVector = vector.getVectorOf( entity );
-       // System.out.println(entity );
-       // System.out.println( phrase );
         if( entityVector == null ) return 0D;
         String[] parts = phrase.split( "\\s+" );
         double s = 0D;
@@ -119,6 +113,9 @@ public class CompressedSingleFileEntitySimilarityUtil extends CompressedEntitySi
     /** @param str
      *  @return an array of adjacent letter pairs contained in the input string */
     private static String[] letterPairs(String str) {
+        if (str.length() < 2) {
+            return new String[0];
+        }
         int numPairs = str.length()-1;
         String[] pairs = new String[numPairs];
         for (int i=0; i<numPairs; i++) {
@@ -129,8 +126,8 @@ public class CompressedSingleFileEntitySimilarityUtil extends CompressedEntitySi
 
     /**  @param str
      *  @return an ArrayList of 2-character Strings. */
-    private static ArrayList wordLetterPairs(String str) {
-        ArrayList allPairs = new ArrayList();
+    private static List<String> wordLetterPairs(String str) {
+        List<String> allPairs = new ArrayList<String>();
         // Tokenize the string and put the tokens/words into an array
         String[] words = str.split("\\s");
         // For each word
@@ -148,14 +145,14 @@ public class CompressedSingleFileEntitySimilarityUtil extends CompressedEntitySi
      * @param phrase2
      * @return lexical similarity value in the range [0,1] */
     public static double lexicalSimilarity(String phrase1, String phrase2) {
-        ArrayList pairs1 = wordLetterPairs(phrase1.toUpperCase());
-        ArrayList pairs2 = wordLetterPairs(phrase2.toUpperCase());
+        List<String> pairs1 = wordLetterPairs(phrase1.toUpperCase());
+        List<String> pairs2 = wordLetterPairs(phrase2.toUpperCase());
         int intersection = 0;
         int union = pairs1.size() + pairs2.size();
         for (int i=0; i<pairs1.size(); i++) {
-            Object pair1=pairs1.get(i);
+            String pair1 = pairs1.get(i);
             for(int j=0; j<pairs2.size(); j++) {
-                Object pair2=pairs2.get(j);
+                String pair2 = pairs2.get(j);
                 if (pair1.equals(pair2)) {
                     intersection++;
                     pairs2.remove(j);

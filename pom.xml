@@ -9,7 +9,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 <!-- 		<hadoop.version>0.23.8.2.1306220840</hadoop.version> -->
                 <hadoop.version>2.7.2.1.1603011934</hadoop.version>
-		<min_jdk_version>1.7</min_jdk_version>
+		<min_jdk_version>1.8</min_jdk_version>
 		<max_jdk_version>1.8</max_jdk_version>		
   </properties>
   <build>
@@ -79,8 +79,16 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin> 
-    </plugins>    
+			</plugin>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<configuration>
+				<source>1.8</source>
+				<target>1.8</target>
+			</configuration>
+		</plugin>
+	</plugins>
   </build>
       <dependencies>
 		  <dependency>
@@ -115,20 +123,6 @@
 		  <version>2.4.0</version>
 		</dependency>
 
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.apache.hadoop</groupId> -->
-<!-- 			<artifactId>hadoop-common</artifactId> -->
-<!-- 			<version>2.6.0</version> -->
-<!-- 			<scope>provided</scope> -->
-<!-- 		</dependency> -->
-
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.apache.hadoop</groupId> -->
-<!-- 			<artifactId>hadoop-core</artifactId> -->
-<!-- 			<version>1.2.1</version> -->
-<!-- 			<scope>provided</scope> -->
-<!-- 		</dependency> -->
-
 		<dependency>
 			<groupId>org.apache.pig</groupId>
 			<artifactId>pig</artifactId>
@@ -151,13 +145,6 @@
 			<artifactId>cloud9</artifactId>
 			<version>1.5.0</version>
 		</dependency>
-          <!--
-		<dependency>
-			<groupId>yahoo.yinst.hadoop_mvn_client</groupId>
-			<artifactId>hadoop-client</artifactId>
-			<version>${hadoop.version}</version>
-		</dependency>
-		-->
     </dependencies>
     
 </project>

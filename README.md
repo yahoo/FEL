@@ -81,7 +81,7 @@ CoherentEntityLinker class takes entity-mentions and n-best list of entity-links
 More coherency algorithms  are under experimentation. They will be added in the future version of the code. 
 
 ```bash
- java -Xmx512m -Xmx10g exec:java -Dexec.mainClass=com.yahoo.semsearch.fastlinking.CoherentEntityLinker -Dexec.args="en/enwiki.wiki2vec.d300.compressed en/english-nov15.hash"  -Dexec.classpathScope=compile
+mvn clean compile  exec:java -Dexec.mainClass=com.yahoo.semsearch.fastlinking.CoherentEntityLinkerWrapper -Dexec.args="en/enwiki.wiki2vec.d300.compressed en/english-nov15.hash test.txt"  -Dexec.classpathScope=compile
 ```
 You can include  [mapping file](src/main/bash/id-type.tsv) in the entity linker arguments (below) that maps integral entity categories to human-readable entity categories. 
 

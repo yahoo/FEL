@@ -2,11 +2,6 @@
  Copyright 2016, Yahoo Inc.
  Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
  **/
-
-/**
- Copyright 2016, Yahoo Inc.
- Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
- **/
 package com.yahoo.semsearch.fastlinking;
 
 import com.yahoo.semsearch.fastlinking.hash.QuasiSuccinctEntityHash;
@@ -19,12 +14,8 @@ import it.unimi.dsi.fastutil.io.BinIO;
 import java.io.IOException;
 import java.util.List;
 
-
 /**
  * Created by aasishkp on 9/30/15.
- *
- * This class is wrapper for FastEntityLinker and EntityContextFastEntityLinker. It allows applications using FEL as a library
- * to directly call EntityLinkWrapper and get Results irrespective of the linker being used.
  */
 public class EntityLinkerWrapper {
 
@@ -32,13 +23,6 @@ public class EntityLinkerWrapper {
     private EntityContextFastEntityLinker linker = null;
     private FastEntityLinker fel = null;
 
-
-    /**
-     * Use entityContextFastEntityLinker when following three arguments are passed
-     * @param hashFile
-     * @param unigramFile
-     * @param entityFile
-     */
     public EntityLinkerWrapper(String hashFile, String unigramFile, String entityFile) {
         try {
             EntityContext queryContext;
@@ -54,10 +38,6 @@ public class EntityLinkerWrapper {
 
     }
 
-    /**
-     * Use FastEntityLinker when only hashfile is passed
-     * @param hashFile
-     */
     public EntityLinkerWrapper(String hashFile) {
         try {
             QuasiSuccinctEntityHash hash = (QuasiSuccinctEntityHash) BinIO.loadObject(hashFile);
@@ -72,34 +52,17 @@ public class EntityLinkerWrapper {
 
     }
 
-    /**
-     * This method returns a string of results for given query and @nbest limits number of entities to be generated
-     * @param query
-     * @param nBest
-     * @return
-     */
-    public String getResults(String query, double nBest) {
+    public String getResults(String query, double threshold) {
         //List<String> strResults = new ArrayList<String>();
         StringBuilder strResults = new StringBuilder("");
 
         List<FastEntityLinker.EntityResult> results = null;
         if (linker != null) {
-
-            //results = this.linker.getResults(query, threshold);
-            try {
-                results = this.linker.getResultsGreedy(query, (int) nBest);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
+            results = this.linker.getResultsGreedy(query, (int) threshold);
         } else {
-            //results = this.fel.getResults(query, threshold);
-            try {
-                results = this.fel.getResultsGreedy(query, (int) nBest);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            results = this.fel.getResultsGreedy(query, (int) threshold);
         }
+        
         //System.err.println(results.size());
         int count = 0;
         if (results == null) {
@@ -113,7 +76,11 @@ public class EntityLinkerWrapper {
                 strResults.append(er.text.toString() + "\t" +
                                   String.valueOf(er.score) + "\t" +
                                   String.valueOf(this.hash.getEntity(er.id).type));
-
+//                strResults.append(er.text.toString() + "\t" + er.score + "\t" +
+//                        String.valueOf(er.s.getStartOffset()) + "\t" +
+//                        String.valueOf(er.s.getEndOffset()) + "\t" +
+//                        String.valueOf(er.s.getSpan()) + "\t" +
+//                        String.valueOf(this.hash.getEntity(er.id).type));
                 strResults.append("\n");
             }
             //System.err.println("here");

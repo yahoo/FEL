@@ -2,21 +2,13 @@
  Copyright 2016, Yahoo Inc.
  Licensed under the terms of the Apache License 2.0. See LICENSE file at the project root for terms.
  **/
-
 package com.yahoo.semsearch.fastlinking;
 
-import com.yahoo.semsearch.fastlinking.hash.QuasiSuccinctEntityHash;
-import com.yahoo.semsearch.fastlinking.utils.EntityLinkingUtils;
-import com.yahoo.semsearch.fastlinking.view.EntityContext;
 import com.yahoo.semsearch.fastlinking.w2v.CompressedSingleFileEntitySimilarityUtil;
-import com.yahoo.semsearch.fastlinking.w2v.LREntityContext;
-
-import it.unimi.dsi.fastutil.io.BinIO;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,10 +22,8 @@ import java.util.ListIterator;
  * and runs Forward-Backward algorithm.
  * J. Binder, K. Murphy and S. Russell. Space-Efficient Inference in Dynamic Probabilistic Networks. Int'l, Joint Conf. on Artificial Intelligence, 1997.
 
- java -Xmx512m -Xmx10g exec:java -Dexec.mainClass=com.yahoo.semsearch.fastlinking.CoherentEntityLinker -Dexec.args="enwiki.wiki2vec.d300.compressed WIKIHASH.nov ENTITIES.PHRASE.model PHRASE.model"  -Dexec.classpathScope=compile
+ java -Xmx512m -Xmx10g exec:java -Dexec.mainClass=com.yahoo.semsearch.fastlinking.CoherentEntityLinker -Dexec.args="enwiki.wiki2vec.d300.compressed"  -Dexec.classpathScope=compile
  */
-
-
 
 /**
  * Struct class with logSimilarity and path to return
@@ -51,8 +41,12 @@ class DPSearch {
 
 
 public class CoherentEntityLinker {
+    // in final result string, delimiter between wiki candidates.
+    // chosen from illegal characters in wiki ids: https://en.wikipedia.org/wiki/Wikipedia:Page_name#Spaces.2C_underscores_and_character_coding
+    public static String CANDIDATE_DELIMITER = "#";
 
-    private static final int NBEST = 10;
+    public static double DEFAULT_LOG_LIKELIHOOD =  -10000.0;
+
     private CompressedSingleFileEntitySimilarityUtil gensimEntityEmbeddings = null;
 
     public int getMAXNBEST() {
@@ -75,20 +69,12 @@ public class CoherentEntityLinker {
 
     private double LEXSIM_LAMBDA = 0.5;
 
-    private  EntityContextFastEntityLinker wikiLinker;
-
-
     /**
-     *
-     * @param entityEmbeddings
+     * @param entityEmbeddings - the absolute path of the compressed entity embeddings file
      */
-    public CoherentEntityLinker(String entityEmbeddings, String hashFile, String unigramFile, String entityFile) {
+    public CoherentEntityLinker(String entityEmbeddings) {
         try {
             gensimEntityEmbeddings = new CompressedSingleFileEntitySimilarityUtil(entityEmbeddings);
-            EntityContext queryContext;
-            QuasiSuccinctEntityHash hash = (QuasiSuccinctEntityHash) BinIO.loadObject(hashFile);
-            queryContext = new LREntityContext(unigramFile, entityFile, hash);
-            wikiLinker = new EntityContextFastEntityLinker(hash, hash.stats, queryContext);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -96,33 +82,7 @@ public class CoherentEntityLinker {
         }
     }
 
-    /**
-     * Link a query to its corresponding NBEST wiki entities, via {@link EntityContextFastEntityLinker#getResultsGreedy(String, int)}.
-     * e.g. getWikiLinks("Apple") returns ["Apple_Inc", "Apple_(fruit)"]
-     *
-     * @param query is an entity span of text
-     * @return an ordered list of wiki links (best to worst) for that query
-     */
-    private ArrayList<String> getWikiLinks(String query) {
-        ArrayList<String> wikiLinks = new ArrayList<String>();
-        List<FastEntityLinker.EntityResult> results = null;
-        if (wikiLinker != null) {
-            try {
-                results = wikiLinker.getResultsGreedy(query, NBEST);
-            } catch (InterruptedException e) {
-            }
-            if (results != null) {
-                for (FastEntityLinker.EntityResult er : results) {
-                    String wikiEntity = er.text.toString();
-                    wikiEntity = EntityLinkingUtils.hexadecimalToChar(wikiEntity);
-                    wikiLinks.add(wikiEntity);
-                }
-            }
-        }
-        return wikiLinks;
-    }
-
-
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         String[] A0 = new String[]{"Huma_Abedin", "Huma_bird", "Uniform_memory_access"};
         String[] A1 =
@@ -146,10 +106,8 @@ public class CoherentEntityLinker {
             surfaceStrings =
             new String[]{"Abedin", "Hillary Clinton", "Clinton", "Elijah Cummings", "Abedin", "Clinton"};
 
-        CoherentEntityLinker coherentEntityLinker = new CoherentEntityLinker(args[0], args[1], args[2], args[3]);
+        CoherentEntityLinker coherentEntityLinker = new CoherentEntityLinker(args[0]);
 
-
-        int lenSurfaceStrings = surfaceStrings.length;
         ArrayList<String> nBestList[] = new ArrayList[]{new ArrayList<String>(Arrays.asList(A0)),
                                                         new ArrayList<String>(Arrays.asList(A1)),
                                                         new ArrayList<String>(Arrays.asList(A2)),
@@ -163,6 +121,15 @@ public class CoherentEntityLinker {
                                                                new ArrayList<String>(Arrays.asList(A2)),
                                                                new ArrayList<String>(Arrays.asList(A1)),
                                                                new ArrayList<String>(Arrays.asList(A0))};
+        
+        /*
+        // Print bestForwardPath and bestBackwardPath
+        String bestForwardPath = coherentEntityLinker.bestForwardPath(nBestList, surfaceStrings);
+        System.out.println("\nbestForwardPath: " + bestForwardPath);
+        
+        String bestBackwardPath = coherentEntityLinker.bestBackwardPath(nBestList, surfaceStrings);
+        System.out.println("\nbestBackwardPath: " + bestBackwardPath);
+        */
 
         DPSearch forwardPath = coherentEntityLinker.dynamicProgrammingSearch(nBestList, surfaceStrings);
         DPSearch backwardPath = coherentEntityLinker.dynamicProgrammingSearch(nBestListReverse, coherentEntityLinker
@@ -172,7 +139,6 @@ public class CoherentEntityLinker {
             bestPath =
             coherentEntityLinker.bestMergedPath(forwardPath.logSimilarity, backwardPath.logSimilarity, nBestList);
         System.out.println(bestPath);
-
     }
 
     /**
@@ -183,14 +149,15 @@ public class CoherentEntityLinker {
      * @param entitySurfaceForms an array of entity spans
      * @return DPSearch object that contains lattice of paths and likelihood scores
      */
-    public DPSearch dynamicProgrammingSearch(ArrayList<String>[] nBestList, String[] entitySurfaceForms) {
+    public DPSearch dynamicProgrammingSearch(List<String>[] nBestList, String[] entitySurfaceForms) {
 
-        int sequenceLength = nBestList.length;
-        double[][] logSimilarityOverall = new double[sequenceLength][MAXNBEST];
+        int sequenceLength = entitySurfaceForms.length;
+        int nBestLength = MAXNBEST;
+        double[][] logSimilarityOverall = new double[sequenceLength][nBestLength];
         for (int i = 0; i < logSimilarityOverall.length; i++) {
-            Arrays.fill(logSimilarityOverall[i], -10000.0);
+            Arrays.fill(logSimilarityOverall[i], DEFAULT_LOG_LIKELIHOOD);
         }
-        String[][] path = new String[sequenceLength][MAXNBEST];
+        String[][] path = new String[sequenceLength][nBestLength];
         for (int i = 0; i < path.length; i++) {
             Arrays.fill(path[i], "");
         }
@@ -201,18 +168,18 @@ public class CoherentEntityLinker {
             int index = it.nextIndex();
             String currentCandidate = it.next();
 
-            logSimilarityOverall[0][index] =
-                Math.log((1 - LEXSIM_LAMBDA) * gensimEntityEmbeddings.entity2WordSimilarity(prependWiki(currentCandidate),
-
+            double entity2WordSim = gensimEntityEmbeddings.entity2WordSimilarity(prependWiki(currentCandidate),
                                                                                  entitySurfaceForms[0]
-                                                                                     .replace(" ", "_")) +
+                                                                                     .replace(" ", "_"));
+            double lexicalSim = gensimEntityEmbeddings
+                .lexicalSimilarity(currentCandidate.replace("_", " "), entitySurfaceForms[0]);
 
-                         LEXSIM_LAMBDA * gensimEntityEmbeddings
-                             .lexicalSimilarity(currentCandidate.replace("_", " "), entitySurfaceForms[0]));
+            logSimilarityOverall[0][index] =
+                Math.max(Math.log((1 - LEXSIM_LAMBDA) * entity2WordSim +
+                                  LEXSIM_LAMBDA * lexicalSim),DEFAULT_LOG_LIKELIHOOD);
+
             path[0][index] = currentCandidate;
-
         }
-        System.out.println(Arrays.toString(path[0]));
 
         ListIterator<String> currentCandidateIterator, previousCandidateIterator;
         for (int i = 1; i < sequenceLength; i++) {
@@ -222,17 +189,18 @@ public class CoherentEntityLinker {
 
                 //MAKE SURE to call NextIndex before Next
                 int currentCandidateIndex = currentCandidateIterator.nextIndex();
-
                 String currentCandidate = currentCandidateIterator.next();
 
-                //System.out.println(i + " , " + currentCandidateIndex);
+                double entity2WordSim = gensimEntityEmbeddings.entity2WordSimilarity(prependWiki(currentCandidate),
+                                                                                     entitySurfaceForms[i]
+                                                                                         .replace(" ", "_"));
+                double lexicalSim = gensimEntityEmbeddings
+                    .lexicalSimilarity(currentCandidate.replace("_", " "), entitySurfaceForms[i]);
+
                 double
                     candidateNBestSimilarity =
-                    Math.log((1 - LEXSIM_LAMBDA) * gensimEntityEmbeddings.entity2WordSimilarity(prependWiki(currentCandidate),
-                                                                                     entitySurfaceForms[i]
-                                                                                         .replace(" ", "_")) +
-                             LEXSIM_LAMBDA * gensimEntityEmbeddings
-                                 .lexicalSimilarity(currentCandidate.replace("_", " "), entitySurfaceForms[i]));
+                    Math.log((1 - LEXSIM_LAMBDA) * entity2WordSim +
+                             LEXSIM_LAMBDA * lexicalSim);
 
                 double bestSimilarity = 0.0;
                 double interCandidateSimilarity = 0.0;
@@ -245,13 +213,17 @@ public class CoherentEntityLinker {
                     int index = previousCandidateIterator.nextIndex();
                     String previousCandidate = previousCandidateIterator.next();
 
-                    interCandidateSimilarity =
-                        Math.log((1 - LEXSIM_LAMBDA) * gensimEntityEmbeddings.entity2EntitySimilarity(prependWiki(previousCandidate),
-                                                                                         prependWiki(currentCandidate))
-                                 +
-                                 LEXSIM_LAMBDA * gensimEntityEmbeddings
-                                     .lexicalSimilarity(previousCandidate.replace("_", " "),
-                                                        currentCandidate.replace("_", " ")));
+                    double entity2EntitySimilarity = gensimEntityEmbeddings.entity2EntitySimilarity(prependWiki(previousCandidate),
+                                                                                                    prependWiki(currentCandidate));
+
+                    double entity2EntityLexicalSimilarity = gensimEntityEmbeddings
+                        .lexicalSimilarity(previousCandidate.replace("_", " "),
+                                           currentCandidate.replace("_", " "));
+
+                    double jointSimilarity = (1 - LEXSIM_LAMBDA) * entity2EntitySimilarity + LEXSIM_LAMBDA * entity2EntityLexicalSimilarity;
+                    interCandidateSimilarity = Math.log(jointSimilarity);
+
+
                     if (bestSimilarity == 0.0) {
                         bestSimilarity = interCandidateSimilarity + logSimilarityOverall[i - 1][index];
                         previousBestCandidateIndex = index;
@@ -263,10 +235,10 @@ public class CoherentEntityLinker {
                     }
                 }
                 try {
-                    logSimilarityOverall[i][currentCandidateIndex] = bestSimilarity + candidateNBestSimilarity;
+                    logSimilarityOverall[i][currentCandidateIndex] = Math.max(bestSimilarity + candidateNBestSimilarity, DEFAULT_LOG_LIKELIHOOD);
 
                     path[i][currentCandidateIndex] =
-                        path[i - 1][previousBestCandidateIndex] + "," + currentCandidate;
+                        path[i - 1][previousBestCandidateIndex] + CANDIDATE_DELIMITER + currentCandidate;
 
                 } catch (ArrayIndexOutOfBoundsException e) {
                     e.getMessage();
@@ -289,7 +261,7 @@ public class CoherentEntityLinker {
      * @param surfaceStrings  an array of entity spans
      * @return String of coherent entities
      */
-    public String bestForwardPath(ArrayList<String>[] nBestList, String[] surfaceStrings) {
+    public String bestForwardPath(List<String>[] nBestList, String[] surfaceStrings) {
         DPSearch forwardPath = dynamicProgrammingSearch(nBestList, surfaceStrings);
         RealVector realVector = new ArrayRealVector(forwardPath.logSimilarity[surfaceStrings.length - 1]);
         int bestPathIndex = realVector.getMaxIndex();
@@ -303,9 +275,9 @@ public class CoherentEntityLinker {
      * @param surfaceStrings  an array of entity spans
      * @return String of coherent entities
      */
-    public String bestBackwardPath(ArrayList<String>[] nBestList, String[] surfaceStrings) {
+    public String bestBackwardPath(List<String>[] nBestList, String[] surfaceStrings) {
         for (int i = 0; i < nBestList.length / 2; i++) {
-            ArrayList<String> temp = nBestList[i];
+            List<String> temp = nBestList[i];
             nBestList[i] = nBestList[nBestList.length - i - 1];
             nBestList[nBestList.length - i - 1] = temp;
 
@@ -323,12 +295,11 @@ public class CoherentEntityLinker {
      * @param nBestList array of arraylists (of string type) with n-best list for each entity span
      * @return best forward + best backward path
      */
-    public String bestMergedPath(double[][] forwardPath, double[][] backwardPath, ArrayList<String>[] nBestList) {
+    public String bestMergedPath(double[][] forwardPath, double[][] backwardPath, List<String>[] nBestList) {
         int length = forwardPath.length;
         for (int i = 0; i < forwardPath.length; i++) {
             for (int j = 0; j < nBestList[i].size(); j++) {
-                System.out
-                    .println(forwardPath[i][j] + ", " + backwardPath[length - 1 - i][j] + ": " + nBestList[i].get(j));
+                //System.out.println(forwardPath[i][j] + ", " + backwardPath[length - 1 - i][j] + ": " + nBestList[i].get(j));
 
                 forwardPath[i][j] += backwardPath[length - 1 - i][j];
             }
@@ -337,13 +308,10 @@ public class CoherentEntityLinker {
         for (int i = 0; i < forwardPath.length; i++) {
             RealVector realVector = new ArrayRealVector(forwardPath[i]);
             int bestPathIndex = realVector.getMaxIndex();
-            //nBestList[i].get(bestPathIndex);
             bestPath.append(nBestList[i].get(bestPathIndex));
-            bestPath.append(",");
+            bestPath.append(CANDIDATE_DELIMITER);
         }
-        System.out.println(bestPath.toString());
         return bestPath.toString();
-
     }
 
     /**
