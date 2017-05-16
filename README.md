@@ -6,10 +6,9 @@ This library performs query segmentation and entity linking to a target referenc
  (< 1 or 2 ms/query on average on a standard laptop) that is completely unsupervised, so that more sophisticated approaches can work on top of it with a decent time budget available. A side effect of this is that the datapack used by the linker
 occupies <3GB making it suitable to run on the grid (and making the footprint on server machines very low).
 
-##Install
+## Install
 
-Please install maven before you run this project. The project comes with a pom.xml which should install all the dependencies required. 
-`` mvn install ``
+Please install maven before you run this project. The project comes with a pom.xml which should install all dependencies when you run the command `` mvn install ``. 
 
 ## What does this tool do?
 The library performs query and document entity linking. It implements different algorithms that return a confidence score (~log likelihood)
