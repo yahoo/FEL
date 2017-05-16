@@ -8,7 +8,8 @@ occupies <3GB making it suitable to run on the grid (and making the footprint on
 
 ##Install
 
-The project comes with a pom.xml which should install all the dependencies required.
+Please install maven before you run this project. The project comes with a pom.xml which should install all the dependencies required. 
+`` mvn install ``
 
 ## What does this tool do?
 The library performs query and document entity linking. It implements different algorithms that return a confidence score (~log likelihood)
@@ -67,10 +68,9 @@ They provide interactive linking through stdin (edit the code or extend for cust
 
 First download the dataset from webscope following the links [provided below] (#models) 
 
-Example usage call (you do not need rlwrap but it is nice to have):
+Example usage call:
 ```bash
-
-rlwrap java -Xmx10G com.yahoo.semsearch.fastlinking.FastEntityLinker en/english-nov15.hash
+mvn exec:java -Dexec.mainClass=com.yahoo.semsearch.fastlinking.FastEntityLinker -Dexec.args="en/english-nov15.hash"
 ```
 
 #### Coherent Entity Linking for Documents
