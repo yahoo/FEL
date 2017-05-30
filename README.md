@@ -60,7 +60,7 @@ If you use this library, please cite following papers:
 
 There are a number of different rankers/linkers that use different conceptual models. The overall description of the algorithm with some implementation details is at:
 
-[Fast and space efficient entity linking for queries](https://goo.gl/LzV88G)
+[Fast and space efficient entity linking for queries](http://www.dc.fi.udc.es/~roi/publications/wsdm2015.pdf)
 
 The main class to use is 
 `com.yahoo.semsearch.fastlinking.FastEntityLinker`
