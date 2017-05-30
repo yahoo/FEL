@@ -1,5 +1,6 @@
 # FEL
-Fast Entity Linker Core
+
+__Fast Entity Linker Core__
 
 This library performs query segmentation and entity linking to a target reference Knowledge Base (i.e., Wikipedia). In its current version it is tailored
 +towards query entity linking (alternatively, short fragments of text). The main goal was to have an extremely fast linker
@@ -11,6 +12,7 @@ occupies <3GB making it suitable to run on the grid (and making the footprint on
 Please install [maven](https://maven.apache.org/) before you run this project. The project comes with a `pom.xml` which should install all dependencies when you run the command `` mvn install ``. 
 
 ## What does this tool do?
+
 The library performs query and document entity linking. It implements different algorithms that return a confidence score (~log likelihood)
 that should be (more or less) comparable across pieces of text of different length so one can use a global threshold for linking. The program operates
 with two datastructures, one big hash and compressed word and entity vectors. The hash is generated out of a datapack that records __counts__ of
@@ -90,6 +92,7 @@ mvn clean compile exec:java \
 You can include a [mapping file](src/main/bash/id-type.tsv) in the entity linker arguments (below) that maps integral entity categories to human-readable entity categories. 
 
 #### Grid based linking
+
 The following command would run the linker on a Hadoop grid:
 
 ```bash
@@ -121,8 +124,6 @@ In general you should rely on thresholding and possibly sticking to the top-1 en
 
 #### Fiddling with word embeddings
 
-[See more at](src/main/java/com/yahoo/semsearch/fastlinking/w2v/README.md)
-
 This package also provides code to
   1. quantize word2vec vectors for uni/bigrams,
   2. compress quantized vectors,
@@ -132,6 +133,7 @@ More on this can be found in the [w2v package](src/main/java/com/yahoo/semsearch
 
 
 #### Mine Wikipedia and Extract Graph-Based Counts
+
 The tool makes use of a datapack that stores counts and aliases (mentions) of entities from different sources. Originally,
 we used anchor text and query logs. The following describes how to mine and compute the anchor text from a public Wikipedia dump using a hadoop cluster (or if
 there is not one, you can use hadoop in a single machine). This is based on the code from the [Cloud9](https://lintool.github.io/Cloud9/) toolkit.
@@ -148,9 +150,9 @@ com.yahoo.semsearch.fastlinking.hash.QuasiSuccinctEntityHash \
   -i <datapack_file> -e <entity2id_file> -o <output_file>
 ```
 
-
 ## Models 
-The following pre-trained models are provided to perform entity linking with the toolkit and are available through the Yahoo! webscope program for research purposes. These models are trained on Wikipedia and distributed using Creative Commons BY SA 4.0 license (see `MODELS_LICENSE`).
+
+The following pre-trained models are provided to perform entity linking with the toolkit and are available through the Yahoo! webscope program for research purposes. These models are trained on Wikipedia and distributed using Creative Commons BY SA 4.0 license (see [MODELS_LICENSE](MODELS_LICENSE)).
 
 ### English 
 
@@ -163,7 +165,6 @@ The following pre-trained models are provided to perform entity linking with the
 * [Spanish Hash trained from October 2015 Wikipedia](http://webscope.sandbox.yahoo.com/catalog.php?datatype=l&did=81)
 
 * [Spanish Entity Embeddings](http://webscope.sandbox.yahoo.com/catalog.php?datatype=l&did=81)
-
 
 ### Chinese (Simplified)
 
