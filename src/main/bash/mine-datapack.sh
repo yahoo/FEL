@@ -224,7 +224,7 @@ elif [ "$1" = "hash" ]; then
 	java -Xmx4G -cp ${FELJAR_FOLDER}/${FEL_JAR} com.yahoo.semsearch.fastlinking.hash.QuasiSuccinctEntityHash \
 		 -i ${FEAT_DIR}/features.dat -e ${FEAT_DIR}/id-entity.tsv -o ${HASH_NAME} || { echo 'QuasiSuccinctEntityHash failed' ; exit 1; }
 else
-  echo "Usage: uber.sh ( commands ... )"
+  echo "Usage: mine-datapack.sh ( commands ... )"
   echo "commands:"
   echo "  dl        download wiki version and upload it to the grid"
   echo "  preprocess	 preprocess wiki datapack "
