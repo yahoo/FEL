@@ -107,7 +107,7 @@ com.yahoo.semsearch.fastlinking.utils.RunFELOntheGrid \
 <outputfile>
 ```
 
-The class reads files that have one query per line - it splits on <TAB> and takes the first element. The output format is:
+The class reads files that have one query per line - it splits on `<TAB>` and takes the first element. The output format is:
 
 ```
 entity_type <TAB> query <TAB> modifier <TAB> entity_id
@@ -141,7 +141,7 @@ there is not one, you can use hadoop in a single machine). This is based on the 
 More on this can be found in the [io package](src/main/java/com/yahoo/semsearch/fastlinking/io/README.md).
 
 
-####Creating a Quasi-succing entity features hash
+#### Creating a Quasi-succing entity features hash
 
 The datapack will contain two files: one with the per-entity counts and one with the entity to id mapping. Then, you can hash it using:
 
